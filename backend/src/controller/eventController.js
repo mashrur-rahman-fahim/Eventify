@@ -290,3 +290,98 @@ export const getEventsByClub = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getAdminEvents = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { page = 1, limit = 10, status = 'all' } = req.query;
+    
+    const query = { 
+      admins: userId 
+    };
+
+    if (status === 'active') {
+      query.isActive = true;
+      query.registrationDeadline = { $gte: new Date() };
+    } else if (status === 'inactive') {
+      query.isActive = false;
+    } else if (status === 'past') {
+      query.date = { $lt: new Date() };
+    } else if (status === 'upcoming') {
+      query.date = { $gte: new Date() };
+      query.isActive = true;
+    }
+
+    const events = await Event.find(query)
+      .populate("clubId", "name")
+      .populate("userId", "name email")
+      .populate("admins", "name email")
+      .populate("attendees", "name email")
+      .sort({ date: 1, time: 1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Event.countDocuments(query);
+
+    const eventsWithRegistrationCounts = await Promise.all(
+      events.map(async (event) => {
+        const registrationCount = await Registration.countDocuments({ 
+          eventId: event._id, 
+          status: { $in: ["registered", "attended"] } 
+        });
+        
+        return {
+          ...event.toObject(),
+          registrationCount
+        };
+      })
+    );
+
+    res.status(200).json({
+      events: eventsWithRegistrationCounts,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+      total,
+      status
+    });
+  } catch (error) {
+    console.error("Error fetching admin events:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getAdminEventStats = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const totalEvents = await Event.countDocuments({ admins: userId });
+    const activeEvents = await Event.countDocuments({ 
+      admins: userId, 
+      isActive: true,
+      registrationDeadline: { $gte: new Date() }
+    });
+    const pastEvents = await Event.countDocuments({ 
+      admins: userId, 
+      date: { $lt: new Date() }
+    });
+    const upcomingEvents = await Event.countDocuments({ 
+      admins: userId, 
+      date: { $gte: new Date() },
+      isActive: true
+    });
+
+    const events = await Event.find({ admins: userId }).select('attendees');
+    const totalAttendees = events.reduce((total, event) => total + event.attendees.length, 0);
+
+    res.status(200).json({
+      totalEvents,
+      activeEvents,
+      pastEvents,
+      upcomingEvents,
+      totalAttendees
+    });
+  } catch (error) {
+    console.error("Error fetching admin event stats:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
