@@ -10,6 +10,45 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// Recommendation API functions
+export const recommendationAPI = {
+  getPersonalizedRecommendations: async (limit = 10) => {
+    const response = await api.get(
+      `/api/recommendations/personalized?limit=${limit}`
+    );
+    return response.data;
+  },
+
+  getTrendingEvents: async (limit = 10) => {
+    const response = await api.get(
+      `/api/recommendations/trending?limit=${limit}`
+    );
+    return response.data;
+  },
+
+  getCategoryRecommendations: async (category, limit = 10) => {
+    const response = await api.get(
+      `/api/recommendations/category/${category}?limit=${limit}`
+    );
+    return response.data;
+  },
+
+  getDashboardRecommendations: async (
+    personalizedLimit = 6,
+    trendingLimit = 4
+  ) => {
+    const response = await api.get(
+      `/api/recommendations/dashboard?personalizedLimit=${personalizedLimit}&trendingLimit=${trendingLimit}`
+    );
+    return response.data;
+  },
+
+  getRecommendationStats: async () => {
+    const response = await api.get(`/api/recommendations/stats`);
+    return response.data;
+  },
+};
+
 // Chatbot API functions
 export const chatbotAPI = {
   sendMessage: async (message) => {
