@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 
 const AdminDashboard = () => {
+    
+    const [clubs, setClubs] = useState([]);
     const [myEvents, setMyEvents] = useState([]);
     const [stats, setStats] = useState({ total: 0, upcoming: 0, attendees: 0 });
     const [loading, setLoading] = useState(true);
@@ -13,9 +15,15 @@ const AdminDashboard = () => {
             try {
                 setLoading(true);
 
-                const response = await api.get('api/event/admin/events');
-                const events = response.data.events;
-                console.log(events);
+                // Fetch clubs and events in parallel for better performance
+                const [clubResponse, eventResponse] = await Promise.all([
+                    api.get('/api/club/getClubByUserId'),
+                    api.get('/api/event/admin/events')
+                ]);
+
+                setClubs(clubResponse.data.clubs);
+
+                const events = eventResponse.data.events;
                 setMyEvents(events);
 
                 // Calculate stats based on the fetched events
@@ -24,10 +32,9 @@ const AdminDashboard = () => {
                 setStats({ total: events.length, upcoming: upcomingCount, attendees: totalAttendeesCount });
 
             } catch (err) {
-                setError('Failed to load your events. Please try again.');
+                setError('Failed to load your dashboard data. Please try again.');
                 console.error(err);
             } finally {
-                // Set loading to false after the request is complete
                 setLoading(false);
             }
         };
@@ -38,9 +45,8 @@ const AdminDashboard = () => {
     const handleDelete = async (eventId) => {
         if (window.confirm('Are you sure you want to permanently delete this event?')) {
             try {
-                await api.delete(`/api/events/delete/${eventId}`);
+                await api.delete(`/api/event/delete/${eventId}`);
                 setMyEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
-                // Optional: You could recalculate stats here if needed
             } catch (err) {
                 console.error("Failed to delete event", err);
                 alert("Could not delete the event.");
@@ -82,6 +88,28 @@ const AdminDashboard = () => {
                     <div className="stat-value">{stats.attendees}</div>
                 </div>
             </div>
+
+            {/* --- NEW: My Clubs Section --- */}
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-4">My Clubs</h2>
+                {clubs.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {clubs.map(club => (
+                            <div key={club._id} className="card bg-base-100 shadow">
+                                <div className="card-body">
+                                    <h3 className="card-title">{club.name}</h3>
+                                    {/* You can add more club details here in the future */}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="bg-base-100 rounded-lg p-4 text-center">
+                        <p>You are not yet an admin of any clubs.</p>
+                    </div>
+                )}
+            </div>
+
 
             {/* Event Management Table */}
             <h2 className="text-2xl font-bold mb-4">Manage My Events</h2>
