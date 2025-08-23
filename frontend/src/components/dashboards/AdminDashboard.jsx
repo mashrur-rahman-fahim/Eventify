@@ -13,8 +13,9 @@ const AdminDashboard = () => {
             try {
                 setLoading(true);
 
-                const response = await api.get('/api/events/my-events');
-                const events = response.data;
+                const response = await api.get('api/event/admin/events');
+                const events = response.data.events;
+                console.log(events);
                 setMyEvents(events);
 
                 // Calculate stats based on the fetched events
