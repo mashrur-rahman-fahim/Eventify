@@ -4,25 +4,39 @@ const certificateSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: true
   },
   eventId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Event",
-    required: true,
+    required: true
+  },
+  registrationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Registration",
+    required: true
   },
   certificateUrl: {
     type: String,
-    required: true,
+    required: true
   },
-  issueDate: {
-    type: Date,
-    default: Date.now,
-  },
-  verificationCode: {
+  certificateCode: {
     type: String,
-    unique: true,
+    required: true,
+    unique: true
   },
+  issuedAt: {
+    type: Date,
+    default: Date.now
+  },
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  verifiedAt: {
+    type: Date,
+    default: null
+  }
 });
 
 const Certificate = mongoose.model("Certificate", certificateSchema);

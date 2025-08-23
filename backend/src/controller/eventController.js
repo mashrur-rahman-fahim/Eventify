@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Event from "../models/event.model.js";
 import Club from "../models/club.model.js";
 import Registration from "../models/registration.model.js";
@@ -5,19 +6,7 @@ import Registration from "../models/registration.model.js";
 // Create a new event
 export const createEvent = async (req, res) => {
   try {
-    const { title, description, date, time, location, category, image, clubId, maxParticipants } = req.body;
-    
-    // Check if user is an admin of the club
-    const club = await Club.findById(clubId);
-    if (!club) {
-      return res.status(404).json({ message: "Club not found" });
-    }
-    
-    if (!club.admins.includes(req.user._id) && club.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "You are not authorized to create events for this club" });
-    }
-    
-    const event = await Event.create({
+    const {
       title,
       description,
       date,
@@ -25,168 +14,276 @@ export const createEvent = async (req, res) => {
       location,
       category,
       image,
-      clubId,
-      userId: req.user._id,
-      maxParticipants,
-      admins: [req.user._id] // Creator is automatically an admin
-    });
+      maxAttendees,
+      registrationDeadline
+    } = req.body;
+
+    const userId = req.user._id;
+    const { clubId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(clubId)) {
+      return res.status(400).json({ message: "Invalid club ID" });
+    }
+
+    // Check if user has permission to create events
+    if (!req.user.role.permissions.canCreateEvents) {
+      return res.status(403).json({ 
+        message: "You don't have permission to create events" 
+      });
+    }
+
+    const club = await Club.findById(clubId);
+    if (!club) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+
+    // Check if user is club admin
+    const isAdmin = club.admins.some(adminId => 
+      adminId.toString() === userId.toString()
+    );
     
-    return res.status(201).json({
+    if (!isAdmin) {
+      return res.status(403).json({ 
+        message: "Only club admins can create events" 
+      });
+    }
+
+    const event = new Event({
+      title,
+      description,
+      date,
+      time,
+      location,
+      category,
+      image,
+      maxAttendees,
+      registrationDeadline,
+      clubId,
+      userId,
+      admins: [userId] // Creator becomes event admin
+    });
+
+    await event.save();
+
+    // Add event to club's events array
+    club.events.push(event._id);
+    await club.save();
+
+    res.status(201).json({
       message: "Event created successfully",
-      event,
+      event
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 // Get all events
 export const getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find({ isActive: true })
+    const { page = 1, limit = 10, category, search } = req.query;
+    const query = { isActive: true };
+
+    // Filter by category
+    if (category) {
+      query.category = category;
+    }
+
+    // Search by title or description
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const events = await Event.find(query)
       .populate("clubId", "name")
-      .populate("userId", "name")
-      .sort({ date: 1 });
-    
-    return res.status(200).json({
+      .populate("userId", "name email")
+      .populate("admins", "name email")
+      .sort({ date: 1, time: 1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Event.countDocuments(query);
+
+    res.status(200).json({
       events,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 // Get event by ID
 export const getEventById = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id)
+    const { eventId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId)
       .populate("clubId", "name description")
-      .populate("userId", "name")
-      .populate("admins", "name email");
-    
+      .populate("userId", "name email")
+      .populate("admins", "name email")
+      .populate("attendees", "name email");
+
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    
+
     // Get registration count
     const registrationCount = await Registration.countDocuments({ 
-      eventId: req.params.id, 
-      status: "registered" 
+      eventId, 
+      status: { $in: ["registered", "attended"] } 
     });
-    
-    return res.status(200).json({
-      event: {
-        ...event.toObject(),
-        registrationCount
-      },
+
+    res.status(200).json({ 
+      event,
+      registrationCount 
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 // Update event
 export const updateEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
-    
+    const { eventId } = req.params;
+    const updateData = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    
-    // Check if user is an admin of this event
-    if (!event.admins.includes(req.user._id) && event.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "You are not authorized to update this event" });
+
+    // Check if user has permission to edit events
+    if (!req.user.role.permissions.canEditEvents) {
+      return res.status(403).json({ 
+        message: "You don't have permission to edit events" 
+      });
     }
-    
-    const updatedEvent = await Event.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
+
+    // Check if user is the event creator or event admin
+    const isEventAdmin = event.admins.some(adminId => 
+      adminId.toString() === req.user._id.toString()
     );
     
-    return res.status(200).json({
+    if (!isEventAdmin && event.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ 
+        message: "Only event admins can update event details" 
+      });
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      eventId,
+      updateData,
+      { new: true, runValidators: true }
+    )
+      .populate("clubId", "name")
+      .populate("userId", "name email")
+      .populate("admins", "name email");
+
+    res.status(200).json({
       message: "Event updated successfully",
-      event: updatedEvent,
+      event: updatedEvent
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 // Delete event
 export const deleteEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
-    
+    const { eventId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    
-    // Only the creator can delete the event
-    if (event.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Only the event creator can delete this event" });
+
+    // Check if user has permission to delete events
+    if (!req.user.role.permissions.canDeleteEvents) {
+      return res.status(403).json({ 
+        message: "You don't have permission to delete events" 
+      });
     }
-    
-    await Event.findByIdAndDelete(req.params.id);
-    
-    // Also delete all registrations for this event
-    await Registration.deleteMany({ eventId: req.params.id });
-    
-    return res.status(200).json({
-      message: "Event deleted successfully",
+
+    // Check if user is the event creator
+    if (event.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ 
+        message: "Only the event creator can delete the event" 
+      });
+    }
+
+    // Delete all registrations for this event
+    await Registration.deleteMany({ eventId });
+
+    // Remove event from club's events array
+    await Club.findByIdAndUpdate(event.clubId, {
+      $pull: { events: eventId }
     });
+
+    await Event.findByIdAndDelete(eventId);
+
+    res.status(200).json({ message: "Event deleted successfully" });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-// Add admin to event
-export const addEventAdmin = async (req, res) => {
+// Get events by club
+export const getEventsByClub = async (req, res) => {
   try {
-    const { userId } = req.body;
-    const event = await Event.findById(req.params.id);
-    
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+    const { clubId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    if (!mongoose.Types.ObjectId.isValid(clubId)) {
+      return res.status(400).json({ message: "Invalid club ID" });
     }
-    
-    // Only the creator can add admins
-    if (event.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Only the event creator can add admins" });
+
+    const club = await Club.findById(clubId);
+    if (!club) {
+      return res.status(404).json({ message: "Club not found" });
     }
-    
-    // Check if user is already an admin
-    if (event.admins.includes(userId)) {
-      return res.status(400).json({ message: "User is already an admin of this event" });
-    }
-    
-    event.admins.push(userId);
-    await event.save();
-    
-    return res.status(200).json({
-      message: "Admin added successfully",
-      event,
+
+    const events = await Event.find({ clubId, isActive: true })
+      .populate("userId", "name email")
+      .populate("attendees", "name email")
+      .sort({ date: 1, time: 1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Event.countDocuments({ clubId, isActive: true });
+
+    res.status(200).json({
+      events,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
