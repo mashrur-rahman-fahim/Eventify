@@ -437,3 +437,26 @@ export const getClubAdmins = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const searchClubsByName = async (req, res) => {
+  try {
+    const { characters } = req.query;
+    
+    if (!characters) {
+      return res.status(400).json({ message: "Characters are required" });
+    }
+    
+    const regexPattern = `^[${characters}]`;
+    const clubs = await Club.find({
+      name: { $regex: regexPattern, $options: "i" },
+    })
+    .populate("admins", "name email")
+    .populate("userId", "name email")
+    .limit(10);
+    
+    return res.status(200).json({ clubs });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
