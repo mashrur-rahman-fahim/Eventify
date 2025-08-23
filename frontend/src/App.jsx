@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LandingPage } from "./pages/LandingPage";
+import { DashboardPage } from "./pages/DashboardPage";
 import { TestPage } from "./pages/TestPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { VerifyEmail } from "./pages/VerifyEmail";
@@ -8,6 +8,7 @@ import { LoginPage } from "./pages/LoginPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import { ChatbotProvider } from "./context/ChatbotContext";
 import ChatbotWidget from "./components/ChatbotWidget";
+import { LandingPage } from "./pages/LandingPage";
 function App() {
   return (
     <ChatbotProvider>
@@ -19,6 +20,7 @@ function App() {
           <Route path="/verify/:token" element={<VerifyEmail />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Routes>
         <ChatbotWidget />
       </BrowserRouter>
