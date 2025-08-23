@@ -1,5 +1,5 @@
-import User from "../models/user.model.js";
-import Role from "../models/roles.model.js";
+import User from "../model/user.model.js";
+import Role from "../model/roles.model.js";
 import { generateToken } from "../services/token.js";
 
 export const registerUser = async (req, res) => {
