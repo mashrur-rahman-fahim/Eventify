@@ -9,11 +9,10 @@ export const createClub = async (req, res) => {
   try {
     const { name, description } = req.body;
     const userId = req.user._id;
-    const role=await Role.findById(req.user.role)
-    
-    
+    const role = await Role.findById(req.user.role);
+
     // Check if user has permission to create clubs (ClubAdmin)
-    if(!role.permissions.canCreateEvents) {
+    if (!role.permissions.canCreateEvents) {
       return res.status(403).json({
         message: "You don't have permission to create clubs",
       });
@@ -45,7 +44,9 @@ export const createClub = async (req, res) => {
 // Get all clubs
 export const getAllClubs = async (req, res) => {
   try {
-    const clubs = await Club.find().populate("admins", "name email");
+    const clubs = await Club.find()
+      .populate("admins", "name email")
+      .populate("joinRequests.userId", "name email");
 
     res.status(200).json({ clubs });
   } catch (error) {
@@ -94,7 +95,7 @@ export const updateClub = async (req, res) => {
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
-    const role=await Role.findById(req.user.role)
+    const role = await Role.findById(req.user.role);
 
     // Check if user has permission to edit clubs
     if (!role.permissions.canEditEvents) {
@@ -147,22 +148,30 @@ export const requestToJoinClub = async (req, res) => {
 
     // Check if user is already an admin
     if (club.admins.includes(userId)) {
-      return res.status(400).json({ message: "You are already an admin of this club" });
+      return res
+        .status(400)
+        .json({ message: "You are already an admin of this club" });
     }
 
     // Check if user already has a pending request
     const existingRequest = club.joinRequests.find(
-      request => request.userId.toString() === userId.toString() && request.status === "pending"
+      (request) =>
+        request.userId.toString() === userId.toString() &&
+        request.status === "pending"
     );
 
     if (existingRequest) {
-      return res.status(400).json({ message: "You already have a pending request to join this club" });
+      return res
+        .status(400)
+        .json({
+          message: "You already have a pending request to join this club",
+        });
     }
 
     // Add join request
     club.joinRequests.push({
       userId,
-      status: "pending"
+      status: "pending",
     });
 
     await club.save();
@@ -192,13 +201,13 @@ export const getJoinRequests = async (req, res) => {
     }
 
     // Check if user is club admin
-    const isAdmin = club.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
+    const isAdmin = club.admins.some(
+      (adminId) => adminId.toString() === req.user._id.toString()
     );
-    
+
     if (!isAdmin) {
-      return res.status(403).json({ 
-        message: "Only club admins can view join requests" 
+      return res.status(403).json({
+        message: "Only club admins can view join requests",
       });
     }
 
@@ -209,13 +218,16 @@ export const getJoinRequests = async (req, res) => {
   }
 };
 
-// Process join request 
+// Process join request
 export const processJoinRequest = async (req, res) => {
   try {
     const { clubId, requestId } = req.params;
     const { action } = req.body; // "approve" or "reject"
 
-    if (!mongoose.Types.ObjectId.isValid(clubId) || !mongoose.Types.ObjectId.isValid(requestId)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(clubId) ||
+      !mongoose.Types.ObjectId.isValid(requestId)
+    ) {
       return res.status(400).json({ message: "Invalid IDs" });
     }
 
@@ -225,39 +237,41 @@ export const processJoinRequest = async (req, res) => {
     }
 
     // Check if user is club admin
-    const isAdmin = club.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
+    const isAdmin = club.admins.some(
+      (adminId) => adminId.toString() === req.user._id.toString()
     );
-    
+
     if (!isAdmin) {
-      return res.status(403).json({ 
-        message: "Only club admins can process join requests" 
+      return res.status(403).json({
+        message: "Only club admins can process join requests",
       });
     }
 
     // Find the request index
     const requestIndex = club.joinRequests.findIndex(
-      request => request._id.toString() === requestId
+      (request) => request._id.toString() === requestId
     );
-    
+
     if (requestIndex === -1) {
       return res.status(404).json({ message: "Join request not found" });
     }
 
     const request = club.joinRequests[requestIndex];
-    
+
     if (request.status !== "pending") {
-      return res.status(400).json({ message: "This request has already been processed" });
+      return res
+        .status(400)
+        .json({ message: "This request has already been processed" });
     }
 
     if (action === "approve") {
       // Add user to admins
       if (!club.admins.includes(request.userId)) {
         club.admins.push(request.userId);
-        
+
         // Add club to user's clubs array
         await User.findByIdAndUpdate(request.userId, {
-          $push: { clubs: clubId }
+          $push: { clubs: clubId },
         });
       }
     } else if (action !== "reject") {
@@ -266,7 +280,7 @@ export const processJoinRequest = async (req, res) => {
 
     // Remove the request from the array regardless of approval or rejection
     club.joinRequests.splice(requestIndex, 1);
-    
+
     await club.save();
 
     const updatedClub = await Club.findById(clubId)
@@ -274,8 +288,10 @@ export const processJoinRequest = async (req, res) => {
       .populate("joinRequests.userId", "name email");
 
     res.status(200).json({
-      message: `Join request ${action === "approve" ? "approved" : "rejected"} successfully`,
-      club: updatedClub
+      message: `Join request ${
+        action === "approve" ? "approved" : "rejected"
+      } successfully`,
+      club: updatedClub,
     });
   } catch (error) {
     console.error(error);
@@ -365,7 +381,7 @@ export const deleteClub = async (req, res) => {
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
-    const role=await Role.findById(req.user.role)
+    const role = await Role.findById(req.user.role);
 
     // Check if user has permission to delete clubs
     if (!role.permissions.canDeleteEvents) {
@@ -402,14 +418,15 @@ export const deleteClub = async (req, res) => {
 export const getClubByUserId = async (req, res) => {
   try {
     const userId = req.user._id;
-    const clubs = await Club.find({ admins: userId });
+    const clubs = await Club.find({ admins: userId })
+      .populate("admins", "name email")
+      .populate("joinRequests.userId", "name email");
     res.status(200).json({ clubs });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 export const getClubAdmins = async (req, res) => {
   try {
@@ -430,7 +447,7 @@ export const getClubAdmins = async (req, res) => {
     res.status(200).json({
       clubName: club.name,
       admins: club.admins,
-      totalAdmins: club.admins.length
+      totalAdmins: club.admins.length,
     });
   } catch (error) {
     console.error(error);
@@ -441,19 +458,19 @@ export const getClubAdmins = async (req, res) => {
 export const searchClubsByName = async (req, res) => {
   try {
     const { characters } = req.query;
-    
+
     if (!characters) {
       return res.status(400).json({ message: "Characters are required" });
     }
-    
+
     const regexPattern = `^[${characters}]`;
     const clubs = await Club.find({
       name: { $regex: regexPattern, $options: "i" },
     })
-    .populate("admins", "name email")
-    .populate("userId", "name email")
-    .limit(10);
-    
+      .populate("admins", "name email")
+      .populate("userId", "name email")
+      .limit(10);
+
     return res.status(200).json({ clubs });
   } catch (error) {
     console.log(error);

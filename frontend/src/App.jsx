@@ -15,13 +15,12 @@ import { ClubPage } from "./pages/ClubPage";
 import { EditEventPage } from "./pages/EditEventPage";
 import { EditClubPage } from "./pages/EditClubPage";
 
-
 import ClubsDashboard from "./pages/ClubsDashboard";
+import ClubManagementPage from "./pages/ClubManagementPage";
 
 import { SingleEventPage } from "./pages/SingleEventPage";
 import { AllEventPage } from "./pages/AllEventPage";
 import { MyEventPage } from "./pages/MyEventPage";
-
 
 function App() {
   return (
@@ -41,13 +40,12 @@ function App() {
           <Route path="/event/edit/:eventId" element={<EditEventPage />} />
           <Route path="/club/edit/:clubId" element={<EditClubPage />} />
 
-
           <Route path="/club-dashboard" element={<ClubsDashboard />} />
+          <Route path="/club-management" element={<ClubManagementPage />} />
 
           <Route path="/event/:id" element={<SingleEventPage />} />
           <Route path="/events" element={<AllEventPage />} />
           <Route path="/my-events" element={<MyEventPage />} />
-
         </Routes>
         <ChatbotWidget />
       </BrowserRouter>
