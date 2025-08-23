@@ -4,7 +4,7 @@ export const isAdmin = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id);
         if (user.role.level !== 1) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return res.status(401).json({ message: "Not Admin" });
         }
         next();
     } catch (error) {
