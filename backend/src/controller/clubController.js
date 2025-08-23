@@ -20,13 +20,11 @@ export const createClub = async (req, res) => {
       name,
       description,
       userId,
-      admins: [userId], // Creator becomes first admin
-      members: [userId] // Creator is also a member
+      admins: [userId], 
     });
 
     await club.save();
 
-    // Add club to user's clubs array
     await User.findByIdAndUpdate(userId, {
       $push: { clubs: club._id }
     });
@@ -45,9 +43,7 @@ export const createClub = async (req, res) => {
 export const getAllClubs = async (req, res) => {
   try {
     const clubs = await Club.find()
-      .populate("userId", "name email")
-      .populate("admins", "name email")
-      .populate("members", "name email");
+      .populate("admins", "name email");
 
     res.status(200).json({ clubs });
   } catch (error) {
@@ -68,7 +64,6 @@ export const getClubById = async (req, res) => {
     const club = await Club.findById(clubId)
       .populate("userId", "name email")
       .populate("admins", "name email")
-      .populate("members", "name email")
       .populate("events");
 
     if (!club) {
@@ -120,71 +115,10 @@ export const updateClub = async (req, res) => {
       clubId,
       { name, description },
       { new: true, runValidators: true }
-    ).populate("admins", "name email").populate("members", "name email");
+    ).populate("admins", "name email");
 
     res.status(200).json({
       message: "Club updated successfully",
-      club: updatedClub
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-// Add member to club
-export const addMember = async (req, res) => {
-  try {
-    const { clubId } = req.params;
-    const { userId } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(clubId) || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid IDs" });
-    }
-
-    const club = await Club.findById(clubId);
-    if (!club) {
-      return res.status(404).json({ message: "Club not found" });
-    }
-
-    // Check if user has permission to add members
-    if (!req.user.role.permissions.canAddMembers) {
-      return res.status(403).json({ 
-        message: "You don't have permission to add members" 
-      });
-    }
-
-    // Check if user is club admin
-    const isAdmin = club.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
-    );
-    
-    if (!isAdmin) {
-      return res.status(403).json({ 
-        message: "Only club admins can add members" 
-      });
-    }
-
-    // Check if user is already a member
-    if (club.members.includes(userId)) {
-      return res.status(400).json({ message: "User is already a member" });
-    }
-
-    // Add user to members
-    club.members.push(userId);
-    await club.save();
-
-    // Add club to user's clubs array
-    await User.findByIdAndUpdate(userId, {
-      $push: { clubs: club._id }
-    });
-
-    const updatedClub = await Club.findById(clubId)
-      .populate("admins", "name email")
-      .populate("members", "name email");
-
-    res.status(200).json({
-      message: "Member added successfully",
       club: updatedClub
     });
   } catch (error) {
@@ -231,18 +165,17 @@ export const addAdmin = async (req, res) => {
       return res.status(400).json({ message: "User is already an admin" });
     }
 
-    // Check if user is a member first
-    if (!club.members.includes(userId)) {
-      return res.status(400).json({ message: "User must be a member first" });
-    }
-
     // Add user to admins
     club.admins.push(userId);
     await club.save();
 
+    // Add club to user's clubs array
+    await User.findByIdAndUpdate(userId, {
+      $push: { clubs: clubId }
+    });
+
     const updatedClub = await Club.findById(clubId)
-      .populate("admins", "name email")
-      .populate("members", "name email");
+      .populate("admins", "name email");
 
     res.status(200).json({
       message: "Admin added successfully",
@@ -254,7 +187,7 @@ export const addAdmin = async (req, res) => {
   }
 };
 
-// Leave club
+// Admin leaves club
 export const leaveClub = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -269,20 +202,43 @@ export const leaveClub = async (req, res) => {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    // Check if user is a member
-    if (!club.members.includes(userId)) {
-      return res.status(400).json({ message: "You are not a member of this club" });
+    // Check if user is an admin of this club
+    const isAdmin = club.admins.some(adminId => 
+      adminId.toString() === userId.toString()
+    );
+    
+    if (!isAdmin) {
+      return res.status(400).json({ message: "You are not an admin of this club" });
     }
 
-    // Remove user from members
-    club.members = club.members.filter(memberId => 
-      memberId.toString() !== userId.toString()
-    );
+    // If this is the last admin, delete the club
+    if (club.admins.length === 1) {
+      // Delete all events associated with this club
+      await Event.deleteMany({ clubId });
+      
+      // Remove club from all admins' clubs array
+      await User.updateMany(
+        { _id: { $in: club.admins } },
+        { $pull: { clubs: clubId } }
+      );
+      
+      await Club.findByIdAndDelete(clubId);
+      
+      return res.status(200).json({ 
+        message: "You were the last admin. The club has been deleted." 
+      });
+    }
 
-    // Remove user from admins if they are one
+    // Remove user from admins
     club.admins = club.admins.filter(adminId => 
       adminId.toString() !== userId.toString()
     );
+
+    // If the leaving user is the creator, transfer ownership to another admin
+    if (club.userId.toString() === userId.toString()) {
+      // Assign the creator role to the first available admin
+      club.userId = club.admins[0];
+    }
 
     await club.save();
 
@@ -326,9 +282,9 @@ export const deleteClub = async (req, res) => {
       });
     }
 
-    // Remove club from all members' clubs array
+    // Remove club from all admins' clubs array
     await User.updateMany(
-      { _id: { $in: club.members } },
+      { _id: { $in: club.admins } },
       { $pull: { clubs: clubId } }
     );
 
