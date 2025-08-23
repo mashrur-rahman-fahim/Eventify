@@ -94,9 +94,10 @@ export const updateClub = async (req, res) => {
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
+    const role=await Role.findById(req.user.role)
 
     // Check if user has permission to edit clubs
-    if (!req.user.role.permissions.canEditEvents) {
+    if (!role.permissions.canEditEvents) {
       return res.status(403).json({
         message: "You don't have permission to edit clubs",
       });
@@ -403,6 +404,34 @@ export const getClubByUserId = async (req, res) => {
     const userId = req.user._id;
     const clubs = await Club.find({ admins: userId });
     res.status(200).json({ clubs });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+export const getClubAdmins = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(clubId)) {
+      return res.status(400).json({ message: "Invalid club ID" });
+    }
+
+    const club = await Club.findById(clubId)
+      .populate("admins", "name email role")
+      .select("admins name");
+
+    if (!club) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+
+    res.status(200).json({
+      clubName: club.name,
+      admins: club.admins,
+      totalAdmins: club.admins.length
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
