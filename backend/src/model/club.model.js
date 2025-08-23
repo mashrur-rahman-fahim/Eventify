@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const clubSchema = new mongoose.Schema({
@@ -8,13 +7,20 @@ const clubSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
+  admins: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }],
+  members: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -1,16 +1,15 @@
-
 import mongoose from "mongoose";
 
 const certificateSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   eventId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Event",
-    required: true
+    required: true,
   },
   certificateUrl: {
     type: String,
@@ -20,13 +19,9 @@ const certificateSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
+  verificationCode: {
+    type: String,
+    unique: true,
   },
 });
 

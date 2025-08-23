@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
@@ -27,30 +26,28 @@ const eventSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String, // URL to the uploaded image
-    default: null,
+    type: String, // URL to image
   },
   clubId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Club",
-    required: true
+    required: true,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true, // The admin who created the event
   },
+  admins: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }], // Additional admins who can manage this event
   maxParticipants: {
     type: Number,
-    default: 0, // 0 means unlimited
   },
   isActive: {
     type: Boolean,
     default: true,
-  },
-  registrationDeadline: {
-    type: Date,
-    required: true,
   },
   createdAt: {
     type: Date,
