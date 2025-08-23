@@ -14,6 +14,7 @@ import roleRoute from "./route/roleRoute.js";
 import certificateRoute from "./route/certificateRoute.js";
 import registrationRoute from "./route/registrationRoutes.js";
 import clubRoute from "./route/clubRoutes.js";
+import eventRoute from "./route/eventRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -73,6 +74,7 @@ app.use("/api", verificationRoute);
 app.use("/api", chatbotRoute);
 app.use("/api", roleRoute);
 app.use("/api", clubRoute);
+app.use("/api", eventRoute);
 app.use("/api/certificates", certificateRoute);
 app.use("/api/registrations", registrationRoute);
 
