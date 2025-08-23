@@ -26,4 +26,5 @@ router.delete("/club/leave/:clubId", verify, isAdmin, leaveClub);
 router.delete("/club/delete/:clubId", verify, isAdmin, deleteClub);
 router.get("/club/getClubByUserId",verify,isAdmin,  getClubByUserId);
 
+
 export default router;
