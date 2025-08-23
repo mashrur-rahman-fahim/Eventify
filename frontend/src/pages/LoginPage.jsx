@@ -16,7 +16,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (isVerified && !isLoading) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [isVerified, isLoading, navigate]);
 
