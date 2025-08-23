@@ -493,3 +493,130 @@ export const getEventCategories = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// Get events by user ID with pagination and filtering
+export const getUserEvents = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const {
+      page = 1,
+      limit = 10,
+      status = "all",
+      search,
+      category,
+    } = req.query;
+
+    const query = {
+      $or: [
+        { userId: userId }, // Events created by user
+        { admins: userId }, // Events where user is admin
+        { attendees: userId }, // Events where user is attendee
+      ],
+    };
+
+    // Filter by status
+    if (status === "active") {
+      query.isActive = true;
+      query.registrationDeadline = { $gte: new Date() };
+    } else if (status === "inactive") {
+      query.isActive = false;
+    } else if (status === "past") {
+      query.date = { $lt: new Date() };
+    } else if (status === "upcoming") {
+      query.date = { $gte: new Date() };
+      query.isActive = true;
+    } else if (status === "created") {
+      query.userId = userId;
+    } else if (status === "admin") {
+      query.admins = userId;
+    } else if (status === "attending") {
+      query.attendees = userId;
+    }
+
+    // Filter by category
+    if (category && category !== "all") {
+      query.category = category;
+    }
+
+    // Search by event name (title)
+    if (search && search.trim()) {
+      query.title = { $regex: search.trim(), $options: "i" };
+    }
+
+    const events = await Event.find(query)
+      .populate("clubId", "name")
+      .populate("userId", "name email")
+      .populate("admins", "name email")
+      .populate("attendees", "name email")
+      .sort({ date: 1, time: 1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Event.countDocuments(query);
+
+    // Get registration counts for events where user is admin
+    const eventsWithRegistrationCounts = await Promise.all(
+      events.map(async (event) => {
+        const isAdmin = event.admins.some(
+          (adminId) => adminId.toString() === userId.toString()
+        );
+
+        if (isAdmin) {
+          const registrationCount = await Registration.countDocuments({
+            eventId: event._id,
+            status: { $in: ["registered", "attended"] },
+          });
+          return {
+            ...event.toObject(),
+            registrationCount,
+            userRole: "admin",
+          };
+        } else if (event.userId.toString() === userId.toString()) {
+          return {
+            ...event.toObject(),
+            userRole: "creator",
+          };
+        } else {
+          return {
+            ...event.toObject(),
+            userRole: "attendee",
+          };
+        }
+      })
+    );
+
+    res.status(200).json({
+      events: eventsWithRegistrationCounts,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+      total,
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPrevPage: page > 1,
+      status,
+    });
+  } catch (error) {
+    console.error("Error fetching user events:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Get user event categories
+export const getUserEventCategories = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const categories = await Event.distinct("category", {
+      $or: [{ userId: userId }, { admins: userId }, { attendees: userId }],
+    });
+
+    // Sort categories alphabetically
+    const sortedCategories = categories.sort();
+
+    res.status(200).json({
+      categories: sortedCategories,
+    });
+  } catch (error) {
+    console.error("Error fetching user event categories:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

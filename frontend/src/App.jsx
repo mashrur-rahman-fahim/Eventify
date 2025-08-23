@@ -16,6 +16,7 @@ import ClubsDashboard from "./pages/ClubsDashboard";
 
 import { SingleEventPage } from "./pages/SingleEventPage";
 import { AllEventPage } from "./pages/AllEventPage";
+import { MyEventPage } from "./pages/MyEventPage";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
 
           <Route path="/event/:id" element={<SingleEventPage />} />
           <Route path="/events" element={<AllEventPage />} />
+          <Route path="/my-events" element={<MyEventPage />} />
         </Routes>
         <ChatbotWidget />
       </BrowserRouter>

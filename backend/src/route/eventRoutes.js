@@ -12,6 +12,8 @@ import {
   getFeaturedEvents,
   getAllFutureEvents,
   getEventCategories,
+  getUserEvents,
+  getUserEventCategories,
 } from "../controller/eventController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 import { isAdmin } from "../middleware/isAdmin.js";
@@ -34,5 +36,7 @@ router.get("/event/search", searchEventsByName);
 router.get("/event/featured", getFeaturedEvents);
 router.get("/event/future", getAllFutureEvents);
 router.get("/event/categories", getEventCategories);
+router.get("/event/user", verify, getUserEvents);
+router.get("/event/user/categories", verify, getUserEventCategories);
 
 export default router;
