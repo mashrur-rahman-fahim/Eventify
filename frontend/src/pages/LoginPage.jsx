@@ -5,7 +5,10 @@ import { VerifyContext } from "../context/VerifyContext";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
-    const {isVerified,isLoading}=useContext(VerifyContext);
+    const {isVerified,isLoading,checkLogin}=useContext(VerifyContext);
+    useEffect(()=>{
+        checkLogin();
+    },[checkLogin])
     useEffect(()=>{
         if(isVerified && !isLoading){
             navigate("/");
