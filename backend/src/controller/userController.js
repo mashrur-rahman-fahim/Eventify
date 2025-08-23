@@ -1,11 +1,14 @@
 import User from "../model/user.model.js";
+
 import { generateToken } from "../services/tokenService.js";
 import { sendVerificationEmail } from "../services/emailService.js";
 import mongoose from "mongoose";
 
+
 export const registerUser = async (req, res) => {
   const session = await mongoose.startSession();
   try {
+
     session.startTransaction();
     const { name, email, password } = req.body;
     const existingUser = await User.findOne({ email });
@@ -50,19 +53,41 @@ export const loginUser = async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
+
     const token = generateToken(user._id);
+    
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 1000 * 60 * 60 * 24,
     });
+
     return res.status(200).json({
       message: "User logged in successfully",
+
       user,
     });
   } catch (error) {
     console.log(error);
 
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// Get user profile
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate("roleId", "name level")
+      .select("-password");
+    
+    return res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Internal Server Error",
     });

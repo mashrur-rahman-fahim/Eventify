@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "homepage": "https://github.com/mashrur-rahman-fahim/Hackathon_project#readme",
- 
   "bugs": {
     "url": "https://github.com/mashrur-rahman-fahim/Hackathon_project/issues"
   },
@@ -18,5 +17,8 @@
   "scripts": {
     "build": "npm install --prefix frontend && npm install --prefix backend && npm run build --prefix frontend",
     "start": "npm run start --prefix backend"
+  },
+  "dependencies": {
+    "mongodb": "^6.18.0"
   }
 }
