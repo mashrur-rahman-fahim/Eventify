@@ -15,6 +15,7 @@ import certificateRoute from "./route/certificateRoute.js";
 import registrationRoute from "./route/registrationRoutes.js";
 import clubRoute from "./route/clubRoutes.js";
 import eventRoute from "./route/eventRoutes.js";
+import recommendationRoute from "./route/recommendationRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -75,8 +76,9 @@ app.use("/api", chatbotRoute);
 app.use("/api", roleRoute);
 app.use("/api", clubRoute);
 app.use("/api", eventRoute);
+app.use("/api", registrationRoute);
+app.use("/api", recommendationRoute);
 app.use("/api/certificates", certificateRoute);
-app.use("/api/registrations", registrationRoute);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

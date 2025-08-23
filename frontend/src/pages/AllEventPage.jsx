@@ -1,15 +1,13 @@
 import React, { useContext, useEffect } from "react";
-
-import { useNavigate } from "react-router-dom";
-import { VerifyContext } from "../context/VerifyContext";
+import AllEvents from "../components/AllEvents";
 import { Navbar } from "../components/Navbar";
-import AdminDashboard from "../components/dashboards/AdminDashboard";
-import StudentDashboard from "../components/dashboards/StudentDashboard";
+import { VerifyContext } from "../context/VerifyContext";
+import { useNavigate } from "react-router-dom";
 import  api  from "../utils/api";
 
-export const DashboardPage = () => {
-  const navigate = useNavigate();
-  const { isVerified, checkLogin, isAdmin, isLoading } = useContext(VerifyContext);
+export const AllEventPage = () => {
+    const navigate = useNavigate();
+  const { isVerified, checkLogin,isLoading } = useContext(VerifyContext);
 
   useEffect(() => {
     checkLogin();
@@ -30,13 +28,11 @@ export const DashboardPage = () => {
       navigate("/login");
     }
   };
-
   return (
     <div className="min-h-screen bg-base-200">
-      <Navbar handleLogout={handleLogout} />
-
+         <Navbar handleLogout={handleLogout} />
       <main className="container mx-auto p-4 md:p-8">
-        {isVerified && (isAdmin ? <AdminDashboard /> : <StudentDashboard />)}
+        <AllEvents />
       </main>
     </div>
   );

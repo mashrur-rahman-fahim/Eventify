@@ -9,7 +9,7 @@ const ChatbotPage = () => {
     isLoading,
     suggestions,
     clearConversation,
-    loadConversationHistory,
+    // loadConversationHistory,
   } = useChatbot();
 
   const [inputMessage, setInputMessage] = useState("");

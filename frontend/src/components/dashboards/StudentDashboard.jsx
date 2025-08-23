@@ -2,33 +2,77 @@ import React, { useState, useEffect } from "react";
 import api from "../../utils/api";
 import { EventCard } from "../EventCard";
 import { EventCardSkeleton } from "../EventCardSkeleton";
+import RecommendationsSection from "../RecommendationsSection";
 
 const StudentDashboard = () => {
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [featuredEvents, setFeaturedEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchFeaturedEvents = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/api/event/getAll");
-
-        // Filter and sort the events directly after fetching
-        const filteredAndSortedEvents = response.data.events
-          .filter((event) => new Date(event.date) >= new Date()) // Keep events that are today or in the future
-          .sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort them with the latest first
-
-        setUpcomingEvents(filteredAndSortedEvents);
+        const response = await api.get("/api/event/featured");
+        setFeaturedEvents(response.data.events);
+        setFilteredEvents(response.data.events);
       } catch (err) {
-        setError("Failed to load events. Please try again.");
+        setError("Failed to load featured events. Please try again.");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchEvents();
+    fetchFeaturedEvents();
   }, []);
+
+  // Effect for debounced search
+  useEffect(() => {
+    const searchFunction = async (searchValue) => {
+      if (!searchValue.trim()) {
+        setFilteredEvents(featuredEvents);
+        setIsSearching(false);
+        return;
+      }
+
+      try {
+        setIsSearching(true);
+        const response = await api.get(
+          `/api/event/search?characters=${searchValue}`
+        );
+        const filteredAndSortedEvents = response.data.events
+          .filter((event) => new Date(event.date) >= new Date())
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        setFilteredEvents(filteredAndSortedEvents);
+      } catch (err) {
+        console.error("Search error:", err);
+        // Fallback to client-side filtering if API fails
+        const filtered = featuredEvents.filter((event) =>
+          event.title.toLowerCase().includes(searchValue.toLowerCase())
+        );
+        setFilteredEvents(filtered);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      searchFunction(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, featuredEvents]);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Since we're only showing featured events (max 10), no pagination needed
+  const currentEvents = filteredEvents;
 
   const renderContent = () => {
     if (loading) {
@@ -62,12 +106,23 @@ const StudentDashboard = () => {
       );
     }
 
-    if (upcomingEvents.length === 0) {
+    if (filteredEvents.length === 0) {
+      if (searchTerm) {
+        return (
+          <div className="text-center py-16 bg-base-100 rounded-lg shadow">
+            <h2 className="text-2xl font-semibold">No Events Found</h2>
+            <p className="text-base-content/60 mt-2">
+              No events match your search criteria. Try different keywords.
+            </p>
+          </div>
+        );
+      }
       return (
         <div className="text-center py-16 bg-base-100 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold">No Upcoming Events Found</h2>
+          <h2 className="text-2xl font-semibold">No Featured Events Found</h2>
           <p className="text-base-content/60 mt-2">
-            It's a quiet day! Check back later for new events.
+            No featured events available at the moment. Check back later for new
+            events.
           </p>
         </div>
       );
@@ -75,7 +130,7 @@ const StudentDashboard = () => {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {upcomingEvents.map((event) => (
+        {currentEvents.map((event) => (
           <EventCard key={event._id} event={event} />
         ))}
       </div>
@@ -83,17 +138,60 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-8">
       {/* Dashboard Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold">Featured Events</h1>
-        <p className="text-base-content/70 mt-2">
-          Discover what's happening across campus.
+      <div>
+        <h1 className="text-4xl font-bold mb-2">Student Dashboard</h1>
+        <p className="text-base-content/70">
+          Discover events tailored to your interests and explore what's
+          happening across campus.
         </p>
       </div>
 
-      {/* Main Content Area */}
-      {renderContent()}
+      {/* Recommendations Section */}
+      <RecommendationsSection />
+
+      {/* Featured Events Section */}
+      <div className="bg-base-100 rounded-lg p-6 shadow-sm">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-2">Featured Events</h2>
+          <p className="text-base-content/70">
+            Latest top events happening across campus.
+          </p>
+
+          {/* Search Input */}
+          <div className="mt-4 max-w-md">
+            <label className="input input-bordered flex items-center gap-2">
+              <input
+                type="text"
+                className="grow"
+                placeholder="Search events by name..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+              {isSearching ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className="w-4 h-4 opacity-70"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </label>
+          </div>
+        </div>
+
+        {/* Featured Events Content */}
+        {renderContent()}
+      </div>
     </div>
   );
 };
