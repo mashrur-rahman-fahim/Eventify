@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema({
       ref: "Club",
     },
   ],
+  registeredEvents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event",
+    },
+  ],
 
   createdAt: {
     type: Date,
