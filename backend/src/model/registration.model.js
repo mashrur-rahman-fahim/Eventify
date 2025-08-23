@@ -1,36 +1,38 @@
+
 import mongoose from "mongoose";
 
 const registrationSchema = new mongoose.Schema({
-  student: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true
   },
-  event: {
+  eventId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Event',
+    ref: "Event",
     required: true
   },
   registrationDate: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
-  attended: {
-    type: Boolean,
-    default: false
-  },
-  certificateGenerated: {
-    type: Boolean,
-    default: false
-  },
-  certificateUrl: {
+  status: {
     type: String,
-    default: null
-  }
+    enum: ["registered", "attended", "cancelled"],
+    default: "registered"
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-// Create a compound index to prevent duplicate registrations
-registrationSchema.index({ student: 1, event: 1 }, { unique: true });
+// Create compound index to prevent duplicate registrations
+registrationSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 
 const Registration = mongoose.model("Registration", registrationSchema);
 export default Registration;

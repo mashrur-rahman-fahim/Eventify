@@ -1,66 +1,65 @@
+
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
   date: {
     type: Date,
-    required: true
+    required: true,
   },
   time: {
     type: String,
-    required: true
+    required: true,
   },
   location: {
     type: String,
-    required: true
+    required: true,
   },
   category: {
     type: String,
     required: true,
-    enum: ['Workshop', 'Seminar', 'Competition', 'Social', 'Conference', 'Other']
   },
-  imageUrl: {
-    type: String,
-    default: null
+  image: {
+    type: String, // URL to the uploaded image
+    default: null,
   },
-  organizer: {
+  clubId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "Club",
+    required: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true
   },
   maxParticipants: {
     type: Number,
-    default: 0 // 0 means unlimited
-  },
-  registrationDeadline: {
-    type: Date,
-    required: true
+    default: 0, // 0 means unlimited
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
+  },
+  registrationDeadline: {
+    type: Date,
+    required: true,
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
-});
-
-eventSchema.pre("save", function(next) {
-  this.updatedAt = Date.now();
-  next();
+    default: Date.now,
+  },
 });
 
 const Event = mongoose.model("Event", eventSchema);

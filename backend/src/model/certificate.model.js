@@ -1,28 +1,33 @@
+
 import mongoose from "mongoose";
 
 const certificateSchema = new mongoose.Schema({
-  registration: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Registration',
+    ref: "User",
     required: true
   },
-  certificateId: {
+  eventId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Event",
+    required: true
+  },
+  certificateUrl: {
     type: String,
     required: true,
-    unique: true
   },
-  issuedDate: {
+  issueDate: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
-  template: {
-    type: String,
-    default: 'default'
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  verificationUrl: {
-    type: String,
-    required: true
-  }
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 const Certificate = mongoose.model("Certificate", certificateSchema);
