@@ -5,11 +5,16 @@ import testRoute from "./route/testRoute.js";
 import path from "path";
 import helmet from "helmet";
 import userRoute from "./route/userRoute.js";
+import verifyEmail from "./route/verifyEmail.js";
+import { sendVerificationEmail } from "./services/emailService.js";
+import verificationRoute from "./route/verificationRoute.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
 const app = express();
 const __dirname = path.resolve();
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   helmet.contentSecurityPolicy({
@@ -48,8 +53,20 @@ if (process.env.NODE_ENV !== "production") {
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
+app.get("/test/email", async (req, res) => {
+  try {
+    await sendVerificationEmail("mashrur950@gmail.com", "1234567890");
+    res.send("Email sent successfully");
+  } catch (error) {
+    console.error("Email test failed:", error.message);
+    res.status(500).send(`Email test failed: ${error.message}`);
+  }
+});
 app.use("/api", testRoute);
 app.use("/api", userRoute);
+app.use("/api", verifyEmail);
+app.use("/api", verificationRoute);
+
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
   app.get("/*splat", (req, res) => {
