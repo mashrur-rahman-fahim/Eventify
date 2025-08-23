@@ -508,15 +508,6 @@ export const RegisterPage = () => {
               </Link>
             </p>
           </div>
-
-          {/* Terms Notice */}
-          <div className="text-center mt-4 pt-4 border-t border-base-300/30">
-            <p className="text-xs text-base-content/50">
-              By creating an account, you agree to our{" "}
-              <a href="#" className="link link-primary">Terms of Service</a> and{" "}
-              <a href="#" className="link link-primary">Privacy Policy</a>
-            </p>
-          </div>
         </div>
       </div>
     </div>
