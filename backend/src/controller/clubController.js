@@ -364,9 +364,10 @@ export const deleteClub = async (req, res) => {
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
+    const role=await Role.findById(req.user.role)
 
     // Check if user has permission to delete clubs
-    if (!req.user.role.permissions.canDeleteEvents) {
+    if (!role.permissions.canDeleteEvents) {
       return res.status(403).json({
         message: "You don't have permission to delete clubs",
       });
