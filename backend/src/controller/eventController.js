@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Event from "../model/event.model.js";
 import Club from "../model/club.model.js";
-import Registration from "../models/registration.model.js";
+import Registration from "../model/registration.model.js";
 import Role from "../model/roles.model.js";
 
 // Create a new event

@@ -8,6 +8,7 @@ import {
   leaveClub,
   deleteClub,
   getClubByUserId,
+  getClubAdmins
 } from "../controller/clubController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 import { isAdmin } from "../middleware/isAdmin.js";
@@ -25,6 +26,7 @@ router.put("/club/update/:clubId", verify, isAdmin, updateClub);
 router.delete("/club/leave/:clubId", verify, isAdmin, leaveClub);
 router.delete("/club/delete/:clubId", verify, isAdmin, deleteClub);
 router.get("/club/getClubByUserId",verify,isAdmin,  getClubByUserId);
+router.get("/club/admins/:clubId", verify, isAdmin, getClubAdmins);
 
 
 export default router;
