@@ -94,9 +94,10 @@ export const updateClub = async (req, res) => {
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
+    const role=await Role.findById(req.user.role)
 
     // Check if user has permission to edit clubs
-    if (!req.user.role.permissions.canEditEvents) {
+    if (!role.permissions.canEditEvents) {
       return res.status(403).json({
         message: "You don't have permission to edit clubs",
       });
