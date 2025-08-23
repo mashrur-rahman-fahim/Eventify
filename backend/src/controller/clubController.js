@@ -343,3 +343,14 @@ export const deleteClub = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getClubByUserId = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const clubs = await Club.find({ admins: userId });
+    res.status(200).json({ clubs });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
