@@ -412,11 +412,7 @@ export const SingleEvent = () => {
             </div>
 
             {/* Organizer Info */}
-            {event.userId && (
-              <div className="card bg-base-100 shadow-xl">
-                
-              </div>
-            )}
+            {event.userId && <div className="card bg-base-100 shadow-xl"></div>}
           </div>
 
           {/* Right Column - Registration Card */}
