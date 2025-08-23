@@ -11,6 +11,8 @@ import verificationRoute from "./route/verificationRoute.js";
 import chatbotRoute from "./route/chatbotRoute.js";
 import cookieParser from "cookie-parser";
 import roleRoute from "./route/roleRoute.js";
+import certificateRoute from "./route/certificateRoute.js";
+import registrationRoute from "./route/registrationRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -69,6 +71,8 @@ app.use("/api", verifyEmail);
 app.use("/api", verificationRoute);
 app.use("/api", chatbotRoute);
 app.use("/api", roleRoute);
+app.use("/api/certificates", certificateRoute);
+app.use("/api/registrations", registrationRoute);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

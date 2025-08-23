@@ -6,8 +6,9 @@ import {
   updateEvent,
   deleteEvent,
   getEventsByClub
-} from "../controllers/eventController.js";
+} from "../controller/eventController.js";
 import { verify } from "../middleware/isLoggedIn.js";
+import { isAdmin } from "../middleware/isAdmin.js";
 
 const router = express.Router();
 
@@ -15,11 +16,11 @@ const router = express.Router();
 // router.use(verify);
 
 // Event routes
-router.post("/create/:clubId", createEvent);
+router.post("/create/:clubId", verify, isAdmin, createEvent);
 router.get("/getAll", getAllEvents);
 router.get("/getEvent/:eventId", getEventById);
-router.put("/update/:eventId", updateEvent);
-router.delete("/delete/:eventId", deleteEvent);
+router.put("/update/:eventId",verify, isAdmin, updateEvent);
+router.delete("/delete/:eventId", verify, isAdmin, deleteEvent);
 router.get("/club/:clubId", getEventsByClub);
 
 export default router;

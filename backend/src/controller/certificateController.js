@@ -1,201 +1,282 @@
-import mongoose from "mongoose";
-import Certificate from "../models/certificate.model.js";
-import Registration from "../models/registration.model.js";
-import Event from "../models/event.model.js";
-import User from "../models/user.model.js";
-import { generateCertificate } from "../services/certificateService.js";
+import certificateService from "../services/certificateService.js";
+import Registration from "../model/registration.model.js";
+import fs from "fs";
+import path from "path";
 
-// Generate certificate
-export const generateEventCertificate = async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    const userId = req.user._id;
+class CertificateController {
+  // Generate certificate for a specific registration
+  async generateCertificate(req, res) {
+    try {
+      const { registrationId } = req.params;
+      const { userId } = req.user; // From auth middleware
 
-    if (!mongoose.Types.ObjectId.isValid(eventId)) {
-      return res.status(400).json({ message: "Invalid event ID" });
-    }
+      // Check if user has permission to generate certificate for this registration
+      const registration = await Registration.findById(registrationId);
+      if (!registration) {
+        return res.status(404).json({ error: "Registration not found" });
+      }
 
-    const event = await Event.findById(eventId);
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
+      // Only allow if user is the participant or an admin of the event
+      if (registration.userId.toString() !== userId && !req.user.isAdmin) {
+        return res
+          .status(403)
+          .json({ error: "Unauthorized to generate certificate" });
+      }
 
-    // Check if event has ended
-    const eventEndTime = new Date(event.date);
-    if (eventEndTime > new Date()) {
-      return res.status(400).json({ message: "Event has not ended yet" });
-    }
+      const certificate = await certificateService.generateCertificate(
+        registrationId
+      );
 
-    // Check if user attended the event
-    const registration = await Registration.findOne({ 
-      eventId, 
-      userId,
-      status: "attended" 
-    });
-
-    if (!registration) {
-      return res.status(400).json({ 
-        message: "You did not attend this event or your attendance was not recorded" 
+      res.status(201).json({
+        success: true,
+        message: "Certificate generated successfully",
+        certificate: {
+          id: certificate._id,
+          certificateNumber: certificate.certificateNumber,
+          participantName: certificate.participantName,
+          eventTitle: certificate.eventTitle,
+          eventDate: certificate.eventDate,
+          generatedAt: certificate.generatedAt,
+        },
       });
+    } catch (error) {
+      console.error("Certificate generation error:", error);
+      res.status(500).json({ error: error.message });
     }
+  }
 
-    // Check if certificate already exists
-    const existingCertificate = await Certificate.findOne({ 
-      eventId, 
-      userId 
-    });
+  // Download certificate PDF
+  async downloadCertificate(req, res) {
+    try {
+      const { certificateId } = req.params;
+      const { userId } = req.user;
 
-    if (existingCertificate) {
-      return res.status(200).json({
-        message: "Certificate already generated",
-        certificate: existingCertificate
+      const certificate = await certificateService.getCertificateById(
+        certificateId
+      );
+
+      if (!certificate) {
+        return res.status(404).json({ error: "Certificate not found" });
+      }
+
+      // Check if user has permission to download this certificate
+      if (certificate.userId.toString() !== userId && !req.user.isAdmin) {
+        return res
+          .status(403)
+          .json({ error: "Unauthorized to download certificate" });
+      }
+
+      const filePath = certificateService.getCertificateFilePath(
+        certificate.pdfPath
+      );
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: "Certificate file not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="certificate_${certificate.certificateNumber}.pdf"`
+      );
+
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error("Certificate download error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Get certificate details
+  async getCertificate(req, res) {
+    try {
+      const { certificateId } = req.params;
+      const { userId } = req.user;
+
+      const certificate = await certificateService.getCertificateById(
+        certificateId
+      );
+
+      if (!certificate) {
+        return res.status(404).json({ error: "Certificate not found" });
+      }
+
+      // Check if user has permission to view this certificate
+      if (certificate.userId.toString() !== userId && !req.user.isAdmin) {
+        return res
+          .status(403)
+          .json({ error: "Unauthorized to view certificate" });
+      }
+
+      res.status(200).json({
+        success: true,
+        certificate: {
+          id: certificate._id,
+          certificateNumber: certificate.certificateNumber,
+          participantName: certificate.participantName,
+          eventTitle: certificate.eventTitle,
+          eventDate: certificate.eventDate,
+          eventLocation: certificate.eventLocation,
+          clubName: certificate.clubName,
+          generatedAt: certificate.generatedAt,
+        },
       });
+    } catch (error) {
+      console.error("Get certificate error:", error);
+      res.status(500).json({ error: error.message });
     }
-
-    // Generate certificate
-    const user = await User.findById(userId);
-    const certificateUrl = await generateCertificate(user, event);
-
-    // Generate unique certificate code
-    const certificateCode = `CERT-${eventId.slice(-4)}-${userId.slice(-4)}-${Date.now().toString(36)}`;
-
-    const certificate = new Certificate({
-      userId,
-      eventId,
-      registrationId: registration._id,
-      certificateUrl,
-      certificateCode
-    });
-
-    await certificate.save();
-
-    // Update registration with certificate ID
-    registration.certificateId = certificate._id;
-    registration.certificateGenerated = true;
-    await registration.save();
-
-    res.status(201).json({
-      message: "Certificate generated successfully",
-      certificate
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
   }
-};
 
-// Get user certificates
-export const getUserCertificates = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { page = 1, limit = 10 } = req.query;
+  // Get all certificates for a user
+  async getUserCertificates(req, res) {
+    try {
+      const { userId } = req.user;
 
-    const certificates = await Certificate.find({ userId })
-      .populate("eventId", "title date category")
-      .populate("registrationId")
-      .sort({ issuedAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+      const certificates = await certificateService.getCertificatesByUser(
+        userId
+      );
 
-    const total = await Certificate.countDocuments({ userId });
-
-    res.status(200).json({
-      certificates,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
-      total
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-// Verify certificate
-export const verifyCertificate = async (req, res) => {
-  try {
-    const { certificateCode } = req.params;
-
-    const certificate = await Certificate.findOne({ certificateCode })
-      .populate("userId", "name email")
-      .populate("eventId", "title date location category")
-      .populate("registrationId");
-
-    if (!certificate) {
-      return res.status(404).json({ message: "Certificate not found" });
-    }
-
-    // Verify the certificate
-    certificate.verified = true;
-    certificate.verifiedAt = new Date();
-    await certificate.save();
-
-    res.status(200).json({
-      message: "Certificate verified successfully",
-      certificate,
-      isValid: true
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-// Get event certificates (for admins)
-export const getEventCertificates = async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-
-    if (!mongoose.Types.ObjectId.isValid(eventId)) {
-      return res.status(400).json({ message: "Invalid event ID" });
-    }
-
-    const event = await Event.findById(eventId);
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    // Check if user has permission to manage attendees
-    if (!req.user.role.permissions.canManageAttendees) {
-      return res.status(403).json({ 
-        message: "You don't have permission to view certificates" 
+      res.status(200).json({
+        success: true,
+        certificates: certificates.map((cert) => ({
+          id: cert._id,
+          certificateNumber: cert.certificateNumber,
+          eventTitle: cert.eventTitle,
+          eventDate: cert.eventDate,
+          clubName: cert.clubName,
+          generatedAt: cert.generatedAt,
+        })),
       });
+    } catch (error) {
+      console.error("Get user certificates error:", error);
+      res.status(500).json({ error: error.message });
     }
-
-    // Check if user is event admin or club admin
-    const isEventAdmin = event.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
-    );
-    
-    const club = await Club.findById(event.clubId);
-    const isClubAdmin = club.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
-    );
-    
-    if (!isEventAdmin && !isClubAdmin) {
-      return res.status(403).json({ 
-        message: "Only event or club admins can view certificates" 
-      });
-    }
-
-    const certificates = await Certificate.find({ eventId })
-      .populate("userId", "name email")
-      .populate("registrationId")
-      .sort({ issuedAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const total = await Certificate.countDocuments({ eventId });
-
-    res.status(200).json({
-      certificates,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
-      total
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
   }
-};
+
+  // Get all certificates for an event (admin only)
+  async getEventCertificates(req, res) {
+    try {
+      const { eventId } = req.params;
+
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const certificates = await certificateService.getCertificatesByEvent(
+        eventId
+      );
+
+      res.status(200).json({
+        success: true,
+        certificates: certificates.map((cert) => ({
+          id: cert._id,
+          certificateNumber: cert.certificateNumber,
+          participantName: cert.participantName,
+          eventTitle: cert.eventTitle,
+          eventDate: cert.eventDate,
+          clubName: cert.clubName,
+          generatedAt: cert.generatedAt,
+        })),
+      });
+    } catch (error) {
+      console.error("Get event certificates error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Generate certificates for all attended participants of an event (admin only)
+  async generateEventCertificates(req, res) {
+    try {
+      const { eventId } = req.params;
+
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      // Get all registrations for the event with 'attended' status
+      const registrations = await Registration.find({
+        eventId,
+        status: "attended",
+        certificateGenerated: false,
+      });
+
+      if (registrations.length === 0) {
+        return res.status(404).json({
+          error: "No attended registrations found for certificate generation",
+        });
+      }
+
+      const generatedCertificates = [];
+      const errors = [];
+
+      // Generate certificates for each registration
+      for (const registration of registrations) {
+        try {
+          const certificate = await certificateService.generateCertificate(
+            registration._id
+          );
+          generatedCertificates.push({
+            id: certificate._id,
+            certificateNumber: certificate.certificateNumber,
+            participantName: certificate.participantName,
+          });
+        } catch (error) {
+          errors.push({
+            registrationId: registration._id,
+            error: error.message,
+          });
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `Generated ${generatedCertificates.length} certificates`,
+        generatedCertificates,
+        errors: errors.length > 0 ? errors : undefined,
+      });
+    } catch (error) {
+      console.error("Generate event certificates error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Verify certificate authenticity
+  async verifyCertificate(req, res) {
+    try {
+      const { certificateId } = req.params;
+
+      const certificate = await certificateService.getCertificateById(
+        certificateId
+      );
+
+      if (!certificate) {
+        return res.status(404).json({
+          success: false,
+          message: "Certificate not found",
+          verified: false,
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        verified: true,
+        certificate: {
+          certificateNumber: certificate.certificateNumber,
+          participantName: certificate.participantName,
+          eventTitle: certificate.eventTitle,
+          eventDate: certificate.eventDate,
+          clubName: certificate.clubName,
+          generatedAt: certificate.generatedAt,
+        },
+      });
+    } catch (error) {
+      console.error("Verify certificate error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+}
+
+export default new CertificateController();

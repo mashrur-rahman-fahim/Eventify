@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
-import Registration from "../models/registration.model.js";
-import Event from "../models/event.model.js";
-import Club from "../models/club.model.js";
+import Registration from "../model/registration.model.js";
+import Event from "../model/event.model.js";
+import Club from "../model/club.model.js";
+import certificateService from "../services/certificateService.js";
 
 // Register for an event
 export const registerForEvent = async (req, res) => {
@@ -25,32 +26,39 @@ export const registerForEvent = async (req, res) => {
 
     // Check if registration deadline has passed
     if (new Date() > event.registrationDeadline) {
-      return res.status(400).json({ message: "Registration deadline has passed" });
+      return res
+        .status(400)
+        .json({ message: "Registration deadline has passed" });
     }
 
     // Check if event has reached maximum attendees
     if (event.maxAttendees > 0) {
-      const currentAttendees = await Registration.countDocuments({ 
-        eventId, 
-        status: { $in: ["registered", "attended"] } 
+      const currentAttendees = await Registration.countDocuments({
+        eventId,
+        status: { $in: ["registered", "attended"] },
       });
-      
+
       if (currentAttendees >= event.maxAttendees) {
         return res.status(400).json({ message: "Event is full" });
       }
     }
 
     // Check if user is already registered
-    const existingRegistration = await Registration.findOne({ eventId, userId });
+    const existingRegistration = await Registration.findOne({
+      eventId,
+      userId,
+    });
     if (existingRegistration) {
-      return res.status(400).json({ message: "You are already registered for this event" });
+      return res
+        .status(400)
+        .json({ message: "You are already registered for this event" });
     }
 
     const registration = new Registration({
       userId,
       eventId,
       clubId: event.clubId,
-      status: "registered"
+      status: "registered",
     });
 
     await registration.save();
@@ -61,7 +69,7 @@ export const registerForEvent = async (req, res) => {
 
     res.status(201).json({
       message: "Registered for event successfully",
-      registration
+      registration,
     });
   } catch (error) {
     console.error(error);
@@ -88,7 +96,7 @@ export const unregisterFromEvent = async (req, res) => {
 
     // Remove user from event attendees
     await Event.findByIdAndUpdate(eventId, {
-      $pull: { attendees: userId }
+      $pull: { attendees: userId },
     });
 
     res.status(200).json({ message: "Unregistered from event successfully" });
@@ -122,7 +130,7 @@ export const getUserRegistrations = async (req, res) => {
       registrations,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      total
+      total,
     });
   } catch (error) {
     console.error(error);
@@ -147,24 +155,24 @@ export const getEventRegistrations = async (req, res) => {
 
     // Check if user has permission to manage attendees
     if (!req.user.role.permissions.canManageAttendees) {
-      return res.status(403).json({ 
-        message: "You don't have permission to view event registrations" 
+      return res.status(403).json({
+        message: "You don't have permission to view event registrations",
       });
     }
 
     // Check if user is event admin or club admin
-    const isEventAdmin = event.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
+    const isEventAdmin = event.admins.some(
+      (adminId) => adminId.toString() === req.user._id.toString()
     );
-    
+
     const club = await Club.findById(event.clubId);
-    const isClubAdmin = club.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
+    const isClubAdmin = club.admins.some(
+      (adminId) => adminId.toString() === req.user._id.toString()
     );
-    
+
     if (!isEventAdmin && !isClubAdmin) {
-      return res.status(403).json({ 
-        message: "Only event or club admins can view registrations" 
+      return res.status(403).json({
+        message: "Only event or club admins can view registrations",
       });
     }
 
@@ -185,7 +193,7 @@ export const getEventRegistrations = async (req, res) => {
       registrations,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      total
+      total,
     });
   } catch (error) {
     console.error(error);
@@ -203,34 +211,35 @@ export const updateRegistrationStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid registration ID" });
     }
 
-    const registration = await Registration.findById(registrationId)
-      .populate("eventId");
-    
+    const registration = await Registration.findById(registrationId).populate(
+      "eventId"
+    );
+
     if (!registration) {
       return res.status(404).json({ message: "Registration not found" });
     }
 
     // Check if user has permission to manage attendees
     if (!req.user.role.permissions.canManageAttendees) {
-      return res.status(403).json({ 
-        message: "You don't have permission to manage registrations" 
+      return res.status(403).json({
+        message: "You don't have permission to manage registrations",
       });
     }
 
     // Check if user is event admin or club admin
     const event = await Event.findById(registration.eventId);
-    const isEventAdmin = event.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
+    const isEventAdmin = event.admins.some(
+      (adminId) => adminId.toString() === req.user._id.toString()
     );
-    
+
     const club = await Club.findById(event.clubId);
-    const isClubAdmin = club.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
+    const isClubAdmin = club.admins.some(
+      (adminId) => adminId.toString() === req.user._id.toString()
     );
-    
+
     if (!isEventAdmin && !isClubAdmin) {
-      return res.status(403).json({ 
-        message: "Only event or club admins can update registrations" 
+      return res.status(403).json({
+        message: "Only event or club admins can update registrations",
       });
     }
 
@@ -238,12 +247,22 @@ export const updateRegistrationStatus = async (req, res) => {
     if (status === "attended") {
       registration.attendedAt = new Date();
     }
-    
+
     await registration.save();
+
+    // Automatically generate certificate when status is changed to "attended"
+    if (status === "attended" && !registration.certificateGenerated) {
+      try {
+        await certificateService.generateCertificate(registration._id);
+      } catch (certError) {
+        console.error("Certificate generation failed:", certError);
+        // Don't fail the request if certificate generation fails
+      }
+    }
 
     res.status(200).json({
       message: "Registration status updated successfully",
-      registration
+      registration,
     });
   } catch (error) {
     console.error(error);
