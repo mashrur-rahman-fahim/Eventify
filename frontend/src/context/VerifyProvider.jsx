@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../utils/api";
-import { VerifyContext } from "./verifyContext";
+import { VerifyContext } from "./VerifyContext";
 export const VerifyProvider = ({children}) => {
     const [isVerified,setIsVerified]=useState(false);
     const [isLoading,setIsLoading]=useState(true);

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import api from "../utils/api";
 import { useNavigate } from "react-router-dom";
-import { VerifyContext } from "../context/verifyContext";
+import { VerifyContext } from "../context/VerifyContext";
 
 export const LoginPage = () => {
     const navigate = useNavigate();

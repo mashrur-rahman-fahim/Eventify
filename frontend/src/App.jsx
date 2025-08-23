@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { LandingPage } from './pages/LandingPage'
 import { TestPage } from './pages/TestPage'
 import { RegisterPage } from './pages/RegisterPage'
-import { VerifyEmail } from './pages/verifyEmail'
+import { VerifyEmail } from './pages/VerifyEmail'
 import { LoginPage } from './pages/LoginPage'
 
 function App() {
