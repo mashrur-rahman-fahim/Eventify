@@ -4,14 +4,14 @@ import {
   unregisterFromEvent,
   getUserRegistrations,
   getEventRegistrations,
-  updateRegistrationStatus
-} from "../controllers/registrationController.js";
+  updateRegistrationStatus,
+} from "../controller/registrationController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 
 const router = express.Router();
 
 // Apply authentication middleware to all registration routes
-// router.use(verify);
+router.use(verify);
 
 // Registration routes
 router.post("/register/:eventId", registerForEvent);
