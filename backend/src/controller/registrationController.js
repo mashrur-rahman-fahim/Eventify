@@ -163,9 +163,10 @@ export const getEventRegistrations = async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
+    const role=await Role.findById(req.user.role)
 
     // Check if user has permission to manage attendees
-    if (!req.user.role.permissions.canManageAttendees) {
+    if (!role.permissions.canManageAttendees) {
       return res.status(403).json({
         message: "You don't have permission to view event registrations",
       });
@@ -229,9 +230,9 @@ export const updateRegistrationStatus = async (req, res) => {
     if (!registration) {
       return res.status(404).json({ message: "Registration not found" });
     }
-
+    const role=await Role.findById(req.user.role)
     // Check if user has permission to manage attendees
-    if (!req.user.role.permissions.canManageAttendees) {
+    if (!role.permissions.canManageAttendees) {
       return res.status(403).json({
         message: "You don't have permission to manage registrations",
       });
