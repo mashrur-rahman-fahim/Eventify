@@ -4,7 +4,7 @@ import {
   getAllClubs,
   getClubById,
   updateClub,
-  addAdmin,
+
   leaveClub,
   deleteClub,
   getClubByUserId,
@@ -22,7 +22,6 @@ router.post("/club/create", verify, isAdmin, createClub);
 router.get("/club/getAll", verify, isAdmin, getAllClubs);
 router.get("/club/getClub/:clubId", verify, isAdmin, getClubById);
 router.put("/club/update/:clubId", verify, isAdmin, updateClub);
-router.post("/club/addAdmin/:clubId", verify, isAdmin, addAdmin);
 router.delete("/club/leave/:clubId", verify, isAdmin, leaveClub);
 router.delete("/club/delete/:clubId", verify, isAdmin, deleteClub);
 router.get("/club/getClubByUserId",verify,isAdmin,  getClubByUserId);

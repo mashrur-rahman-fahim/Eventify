@@ -2,15 +2,18 @@ import mongoose from "mongoose";
 import Club from "../model/club.model.js";
 import User from "../model/user.model.js";
 import Event from "../model/event.model.js";
+import Role from "../model/roles.model.js";
 
 // Create a new club
 export const createClub = async (req, res) => {
   try {
     const { name, description } = req.body;
     const userId = req.user._id;
+    const role=await Role.findById(req.user.role)
+    
 
     // Check if user has permission to create clubs (ClubAdmin)
-    if (!req.user.role.permissions.canCreateEvents) {
+    if (!role.permissions.canCreateEvents) {
       return res.status(403).json({
         message: "You don't have permission to create clubs",
       });
