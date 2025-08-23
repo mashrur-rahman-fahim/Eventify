@@ -4,45 +4,36 @@ import { EventCard } from "../EventCard";
 import { EventCardSkeleton } from "../EventCardSkeleton";
 
 const StudentDashboard = () => {
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [featuredEvents, setFeaturedEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [eventsPerPage] = useState(9);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchFeaturedEvents = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/api/event/getAll");
-
-        // Filter and sort the events directly after fetching
-        const filteredAndSortedEvents = response.data.events
-          .filter((event) => new Date(event.date) >= new Date()) // Keep events that are today or in the future
-          .sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort them with the latest first
-
-        setUpcomingEvents(filteredAndSortedEvents);
-        setFilteredEvents(filteredAndSortedEvents);
+        const response = await api.get("/api/event/featured");
+        setFeaturedEvents(response.data.events);
+        setFilteredEvents(response.data.events);
       } catch (err) {
-        setError("Failed to load events. Please try again.");
+        setError("Failed to load featured events. Please try again.");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchEvents();
+    fetchFeaturedEvents();
   }, []);
 
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce(async (searchValue) => {
       if (!searchValue.trim()) {
-        setFilteredEvents(upcomingEvents);
+        setFilteredEvents(featuredEvents);
         setIsSearching(false);
-        setCurrentPage(1);
         return;
       }
 
@@ -56,20 +47,18 @@ const StudentDashboard = () => {
           .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         setFilteredEvents(filteredAndSortedEvents);
-        setCurrentPage(1);
       } catch (err) {
         console.error("Search error:", err);
         // Fallback to client-side filtering if API fails
-        const filtered = upcomingEvents.filter((event) =>
+        const filtered = featuredEvents.filter((event) =>
           event.title.toLowerCase().includes(searchValue.toLowerCase())
         );
         setFilteredEvents(filtered);
-        setCurrentPage(1);
       } finally {
         setIsSearching(false);
       }
     }, 300),
-    [upcomingEvents]
+    [featuredEvents]
   );
 
   useEffect(() => {
@@ -80,18 +69,8 @@ const StudentDashboard = () => {
     setSearchTerm(e.target.value);
   };
 
-  // Get current events
-  const indexOfLastEvent = currentPage * eventsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = filteredEvents.slice(
-    indexOfFirstEvent,
-    indexOfLastEvent
-  );
-
-  // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+  // Since we're only showing featured events (max 10), no pagination needed
+  const currentEvents = filteredEvents;
 
   const renderContent = () => {
     if (loading) {
@@ -138,57 +117,21 @@ const StudentDashboard = () => {
       }
       return (
         <div className="text-center py-16 bg-base-100 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold">No Upcoming Events Found</h2>
+          <h2 className="text-2xl font-semibold">No Featured Events Found</h2>
           <p className="text-base-content/60 mt-2">
-            It's a quiet day! Check back later for new events.
+            No featured events available at the moment. Check back later for new
+            events.
           </p>
         </div>
       );
     }
 
     return (
-      <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentEvents.map((event) => (
-            <EventCard key={event._id} event={event} />
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-8">
-            <div className="join">
-              <button
-                className="join-item btn"
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                «
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    className={`join-item btn ${
-                      currentPage === page ? "btn-active" : ""
-                    }`}
-                    onClick={() => paginate(page)}
-                  >
-                    {page}
-                  </button>
-                )
-              )}
-              <button
-                className="join-item btn"
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                »
-              </button>
-            </div>
-          </div>
-        )}
-      </>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {currentEvents.map((event) => (
+          <EventCard key={event._id} event={event} />
+        ))}
+      </div>
     );
   };
 
@@ -198,7 +141,7 @@ const StudentDashboard = () => {
       <div className="mb-8">
         <h1 className="text-4xl font-bold">Featured Events</h1>
         <p className="text-base-content/70 mt-2">
-          Discover what's happening across campus.
+          Latest top 10 events happening across campus.
         </p>
 
         {/* Search Input */}

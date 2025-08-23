@@ -83,14 +83,8 @@ export const SingleEvent = () => {
   const handleRegister = async () => {
     try {
       await api.post(`api/event/register/${id}`);
-      // Refetch data after successful registration
-      const [eventResponse, registrationResponse] = await Promise.all([
-        api.get(`api/event/getEvent/${id}`),
-        api.get(`api/event/getRegistrationByUser&event/${id}`),
-      ]);
-      setEvent(eventResponse.data.event);
-      setRegistrationCount(eventResponse.data.registrationCount);
-      setRegistered(registrationResponse.data.success);
+      setRegistered(true);
+      setRegistrationCount((prev) => prev + 1);
     } catch (error) {
       console.error("Registration error:", error);
     }
@@ -99,14 +93,8 @@ export const SingleEvent = () => {
   const handleUnregister = async () => {
     try {
       await api.delete(`api/event/unregister/${id}`);
-      // Refetch data after successful unregistration
-      const [eventResponse, registrationResponse] = await Promise.all([
-        api.get(`api/event/getEvent/${id}`),
-        api.get(`api/event/getRegistrationByUser&event/${id}`),
-      ]);
-      setEvent(eventResponse.data.event);
-      setRegistrationCount(eventResponse.data.registrationCount);
-      setRegistered(registrationResponse.data.success);
+      setRegistered(false);
+      setRegistrationCount((prev) => prev - 1);
     } catch (error) {
       console.error("Unregistration error:", error);
     }
@@ -412,7 +400,30 @@ export const SingleEvent = () => {
             </div>
 
             {/* Organizer Info */}
-            {event.userId && <div className="card bg-base-100 shadow-xl"></div>}
+            {event.userId && (
+              <div className="card bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title text-2xl mb-4">Organized By</h2>
+                  <div className="flex items-center gap-4">
+                    <div className="avatar placeholder">
+                      <div className="bg-primary text-primary-content rounded-full w-16">
+                        <span className="text-lg">
+                          {event.userId.name?.charAt(0) || "O"}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {event.userId.name || "Event Organizer"}
+                      </h3>
+                      <p className="text-base-content/70">
+                        {event.userId.email || "Contact organizer for details"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Registration Card */}
