@@ -11,6 +11,7 @@ import ChatbotWidget from "./components/ChatbotWidget";
 import { LandingPage } from "./pages/LandingPage";
 import { CreateEventPage } from "./pages/CreateEventPage";
 import { ClubPage } from "./pages/ClubPage";
+import { EditEventPage } from "./pages/EditEventPage";
 function App() {
   return (
     <ChatbotProvider>
@@ -25,6 +26,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/create-event" element={<CreateEventPage />} />
           <Route path="/club" element={<ClubPage />} />
+          <Route path="/event/edit/:eventId" element={<EditEventPage />} />
         </Routes>
         <ChatbotWidget />
       </BrowserRouter>
