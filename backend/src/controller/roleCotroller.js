@@ -6,10 +6,19 @@ export const seedRoles = async (req, res) => {
             {
                 name: "Student",
                 level: 0,
+                
             },
             {
                 name: "ClubAdmin",
                 level: 1,
+                permissions: {
+                    canCreateEvents: true,
+                    canEditEvents: true,
+                    canDeleteEvents: true,
+                    canManageAttendees: true,
+                    canAddMembers: true,
+                    canAddAdmins: true,
+                }
             },
     
         ];

@@ -11,9 +11,9 @@ export const createClub = async (req, res) => {
     const userId = req.user._id;
     const role=await Role.findById(req.user.role)
     
-
+    
     // Check if user has permission to create clubs (ClubAdmin)
-    if (!role.permissions.canCreateEvents) {
+    if(!role.permissions.canCreateEvents) {
       return res.status(403).json({
         message: "You don't have permission to create clubs",
       });
