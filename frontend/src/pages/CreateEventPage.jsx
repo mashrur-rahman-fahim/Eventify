@@ -5,7 +5,6 @@ import api from '../utils/api';
 export const CreateEventPage = () => {
     const navigate = useNavigate();
 
-    // State for form fields
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -17,7 +16,6 @@ export const CreateEventPage = () => {
         registrationDeadline: ''
     });
 
-    // State for the image file and its preview URL
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
 
@@ -191,7 +189,7 @@ export const CreateEventPage = () => {
 
                         {/* Action Buttons */}
                         <div className="flex justify-end gap-4 mt-6">
-                            <button type="button" onClick={() => navigate('/admin-dashboard')} className="btn btn-ghost">Cancel</button>
+                            <button type="button" onClick={() => navigate('/dashboard')} className="btn btn-ghost">Cancel</button>
                             <button type="submit" className="btn btn-primary" disabled={loading}>
                                 {loading ? <span className="loading loading-spinner"></span> : 'Create Event'}
                             </button>
