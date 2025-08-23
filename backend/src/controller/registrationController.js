@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Registration from "../model/registration.model.js";
 import Event from "../model/event.model.js";
 import Club from "../model/club.model.js";
+import User from "../model/user.model.js";
 import certificateService from "../services/certificateService.js";
 
 // Register for an event
@@ -67,6 +68,11 @@ export const registerForEvent = async (req, res) => {
     event.attendees.push(userId);
     await event.save();
 
+    // Add event to user's registeredEvents array
+    await User.findByIdAndUpdate(userId, {
+      $push: { registeredEvents: eventId }
+    });
+
     res.status(201).json({
       message: "Registered for event successfully",
       registration,
@@ -97,6 +103,11 @@ export const unregisterFromEvent = async (req, res) => {
     // Remove user from event attendees
     await Event.findByIdAndUpdate(eventId, {
       $pull: { attendees: userId },
+    });
+
+    // Remove event from user's registeredEvents array
+    await User.findByIdAndUpdate(userId, {
+      $pull: { registeredEvents: eventId }
     });
 
     res.status(200).json({ message: "Unregistered from event successfully" });
