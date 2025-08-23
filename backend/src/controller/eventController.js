@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Event from "../models/event.model.js";
 import Club from "../models/club.model.js";
 import Registration from "../models/registration.model.js";
+import Role from "../model/roles.model.js";
 
 // Create a new event
 export const createEvent = async (req, res) => {
@@ -24,9 +25,10 @@ export const createEvent = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(clubId)) {
       return res.status(400).json({ message: "Invalid club ID" });
     }
+    const role=await Role.findById(req.user.role)
 
     // Check if user has permission to create events
-    if (!req.user.role.permissions.canCreateEvents) {
+    if (!role.permissions.canCreateEvents) {
       return res.status(403).json({ 
         message: "You don't have permission to create events" 
       });
@@ -169,9 +171,9 @@ export const updateEvent = async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-
+    const role=await Role.findById(req.user.role)
     // Check if user has permission to edit events
-    if (!req.user.role.permissions.canEditEvents) {
+    if (!role.permissions.canEditEvents) {
       return res.status(403).json({ 
         message: "You don't have permission to edit events" 
       });
@@ -220,9 +222,9 @@ export const deleteEvent = async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-
+    const role=await Role.findById(req.user.role)
     // Check if user has permission to delete events
-    if (!req.user.role.permissions.canDeleteEvents) {
+    if (!role.permissions.canDeleteEvents) {
       return res.status(403).json({ 
         message: "You don't have permission to delete events" 
       });
