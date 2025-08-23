@@ -5,7 +5,9 @@ import {
   getEventById,
   updateEvent,
   deleteEvent,
-  getEventsByClub
+  getEventsByClub,
+  getAdminEvents,
+  getAdminEventStats
 } from "../controller/eventController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 import { isAdmin } from "../middleware/isAdmin.js";
@@ -22,5 +24,7 @@ router.get("/event/getEvent/:eventId", getEventById);
 router.put("/event/update/:eventId",verify, isAdmin, updateEvent);
 router.delete("/event/delete/:eventId", verify, isAdmin, deleteEvent);
 router.get("/event/club/:clubId", getEventsByClub);
+router.get("/event/admin/events", verify, getAdminEvents);
+router.get("/event/admin/stats", verify, getAdminEventStats);
 
 export default router;
