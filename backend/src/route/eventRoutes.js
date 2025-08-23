@@ -6,7 +6,7 @@ import {
   updateEvent,
   deleteEvent,
   getEventsByClub
-} from "../controllers/eventController.js";
+} from "../controller/eventController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 
 const router = express.Router();

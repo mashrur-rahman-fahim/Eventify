@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Club from "../models/club.model.js";
+import Club from "../model/club.model.js";
 import User from "../models/user.model.js";
 import Event from "../models/event.model.js";
 

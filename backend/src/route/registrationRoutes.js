@@ -5,7 +5,7 @@ import {
   getUserRegistrations,
   getEventRegistrations,
   updateRegistrationStatus
-} from "../controllers/registrationController.js";
+} from "../controller/registrationController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 
 const router = express.Router();

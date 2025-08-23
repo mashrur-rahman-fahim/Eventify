@@ -4,7 +4,7 @@ import {
   getUserCertificates,
   verifyCertificate,
   getEventCertificates
-} from "../controllers/certificateController.js";
+} from "../controller/certificateController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 
 const router = express.Router();

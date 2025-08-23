@@ -12,8 +12,8 @@ import chatbotRoute from "./route/chatbotRoute.js";
 import cookieParser from "cookie-parser";
 import eventRoute from "./route/eventRoutes.js";
 import clubRoutes from "./route/clubRoutes.js";
-import registrationRoutes from "./route/registrationRoutes";
-import certificateRoute from "./route/certificateRoute";
+import registrationRoutes from "./route/registrationRoutes.js";
+import certificateRoute from "./route/certificateRoute.js";
 
 dotenv.config();
 
