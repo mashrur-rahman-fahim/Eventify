@@ -145,12 +145,10 @@ export const requestToJoinClub = async (req, res) => {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    // Check if user is already an admin
     if (club.admins.includes(userId)) {
       return res.status(400).json({ message: "You are already an admin of this club" });
     }
 
-    // Check if user already has a pending request
     const existingRequest = club.joinRequests.find(
       request => request.userId.toString() === userId.toString() && request.status === "pending"
     );

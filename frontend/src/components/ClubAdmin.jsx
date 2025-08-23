@@ -16,6 +16,11 @@ export const ClubAdmin = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [editingClub, setEditingClub] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+  });
 
   useEffect(() => {
     checkLogin();
@@ -57,6 +62,35 @@ export const ClubAdmin = () => {
     } finally {
       setIsCreating(false);
     }
+  };
+
+  const updateClub = async (clubId) => {
+    try {
+      const response = await api.put(`/api/club/update/${clubId}`, editForm);
+      console.log(response);
+      setSuccessMessage("Club updated successfully!");
+      setEditingClub(null);
+      setEditForm({ name: "", description: "" });
+      // Refresh clubs list
+      const clubsResponse = await api.get("/api/club/getClubByUserId");
+      setClub(clubsResponse.data.clubs);
+    } catch (error) {
+      console.log(error);
+      setErrorMessage("Failed to update club. Please try again.");
+    }
+  };
+
+  const handleEditClick = (clubItem) => {
+    setEditingClub(clubItem._id);
+    setEditForm({
+      name: clubItem.name,
+      description: clubItem.description,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingClub(null);
+    setEditForm({ name: "", description: "" });
   };
 
   const deleteClub = async (clubId) => {
@@ -282,79 +316,147 @@ export const ClubAdmin = () => {
                     {club.map((clubItem) => (
                       <div key={clubItem._id} className="card bg-base-200 shadow-sm">
                         <div className="card-body p-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <h3 className="card-title text-lg">{clubItem.name}</h3>
-                              <p className="text-base-content/70 text-sm mt-2">
-                                {clubItem.description}
-                              </p>
-                            </div>
-                            
-                            <div className="dropdown dropdown-end">
-                              <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                                  />
-                                </svg>
+                          {editingClub === clubItem._id ? (
+                            // Edit Mode
+                            <div className="space-y-4">
+                              <div className="form-control">
+                                <label className="label">
+                                  <span className="label-text font-medium">Club Name</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className="input input-bordered input-sm"
+                                  value={editForm.name}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, name: e.target.value })
+                                  }
+                                />
                               </div>
-                              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                <li>
-                                  <button 
-                                    onClick={() => leaveClub(clubItem._id)}
-                                    className="text-warning hover:bg-warning hover:text-warning-content"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                      />
-                                    </svg>
-                                    Leave Club
-                                  </button>
-                                </li>
-                                <li>
-                                  <button 
-                                    onClick={() => deleteClub(clubItem._id)}
-                                    className="text-error hover:bg-error hover:text-error-content"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                      />
-                                    </svg>
-                                    Delete Club
-                                  </button>
-                                </li>
-                              </ul>
+                              <div className="form-control">
+                                <label className="label">
+                                  <span className="label-text font-medium">Description</span>
+                                </label>
+                                <textarea
+                                  className="textarea textarea-bordered textarea-sm h-20"
+                                  value={editForm.description}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, description: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <button 
+                                  className="btn btn-sm btn-ghost"
+                                  onClick={cancelEdit}
+                                >
+                                  Cancel
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-primary"
+                                  onClick={() => updateClub(clubItem._id)}
+                                >
+                                  Save
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            // View Mode
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h3 className="card-title text-lg">{clubItem.name}</h3>
+                                <p className="text-base-content/70 text-sm mt-2">
+                                  {clubItem.description}
+                                </p>
+                              </div>
+                              
+                              <div className="dropdown dropdown-end">
+                                <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                    />
+                                  </svg>
+                                </div>
+                                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                  <li>
+                                    <button 
+                                      onClick={() => handleEditClick(clubItem)}
+                                      className="text-info hover:bg-info hover:text-info-content"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        />
+                                      </svg>
+                                      Edit Club
+                                    </button>
+                                  </li>
+                                  <li>
+                                    <button 
+                                      onClick={() => leaveClub(clubItem._id)}
+                                      className="text-warning hover:bg-warning hover:text-warning-content"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                        />
+                                      </svg>
+                                      Leave Club
+                                    </button>
+                                  </li>
+                                  <li>
+                                    <button 
+                                      onClick={() => deleteClub(clubItem._id)}
+                                      className="text-error hover:bg-error hover:text-error-content"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                      </svg>
+                                      Delete Club
+                                    </button>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
