@@ -93,7 +93,7 @@ export const CreateEventPage = () => {
         }
 
         try {
-            await api.post('/api/events/create', dataToSubmit);
+            await api.post('/api/event/create', dataToSubmit);
             
             navigate('/dashboard'); // Redirect on success
 
