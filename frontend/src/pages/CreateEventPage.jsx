@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 
 export const CreateEventPage = () => {
     const navigate = useNavigate();
 
+    // State for the list of clubs and the selected club
+    const [clubs, setClubs] = useState([]);
+    const [selectedClubId, setSelectedClubId] = useState(''); // New state for the selected club ID
+    const [clubsLoading, setClubsLoading] = useState(true); // State to track if clubs are being fetched
+
+    // State for form fields
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -24,13 +30,36 @@ export const CreateEventPage = () => {
     const [error, setError] = useState('');
     const [validationErrors, setValidationErrors] = useState({});
 
+    // Fetch the admin's clubs
+    useEffect(() => {
+        const fetchClubs = async () => {
+            try {
+                setClubsLoading(true);
+                const response = await api.get("/api/club/getClubByUserId");
+                setClubs(response.data.clubs);
+            } catch (error) {
+                console.log(error);
+                setError("Could not load your clubs. Please try again later.");
+            } finally {
+                setClubsLoading(false);
+            }
+        };
+        fetchClubs();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
-        // Clear validation error when user starts typing
         if (validationErrors[name]) {
             setValidationErrors({ ...validationErrors, [name]: null });
+        }
+    };
+
+    // New handler for the club dropdown
+    const handleClubChange = (e) => {
+        setSelectedClubId(e.target.value);
+        if (validationErrors.club) {
+            setValidationErrors({ ...validationErrors, club: null });
         }
     };
 
@@ -38,7 +67,6 @@ export const CreateEventPage = () => {
         const file = e.target.files[0];
         if (file) {
             setImageFile(file);
-            // Create a temporary URL for the image preview
             setImagePreview(URL.createObjectURL(file));
         } else {
             setImageFile(null);
@@ -46,10 +74,10 @@ export const CreateEventPage = () => {
         }
     };
 
-    // --- Validation ---
-
     const validateForm = () => {
         const errors = {};
+        // Add validation for club selection
+        if (!selectedClubId) errors.club = 'You must select a club.';
         if (!formData.title.trim()) errors.title = 'Title is required.';
         if (!formData.description.trim()) errors.description = 'Description is required.';
         if (!formData.date) errors.date = 'Date is required.';
@@ -61,41 +89,34 @@ export const CreateEventPage = () => {
         if (new Date(formData.registrationDeadline) > new Date(formData.date)) errors.registrationDeadline = 'Deadline cannot be after the event date.';
         
         setValidationErrors(errors);
-        // Return true if there are no errors, false otherwise
         return Object.keys(errors).length === 0;
     };
-
-
-    // --- Form Submission ---
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        // Stop if validation fails
         if (!validateForm()) {
             return;
         }
 
         setLoading(true);
 
-        // FormData is necessary for sending files along with text
         const dataToSubmit = new FormData();
-        
-        // Append all text fields
         for (const key in formData) {
             dataToSubmit.append(key, formData[key]);
         }
-        
-        // Append the image file if it exists
         if (imageFile) {
             dataToSubmit.append('image', imageFile);
         }
 
         try {
-            await api.post('/api/event/create', dataToSubmit);
-            
-            navigate('/dashboard'); // Redirect on success
+
+            // Use the selectedClubId to build the dynamic URL
+            await api.post(`/api/event/create/${selectedClubId}`, dataToSubmit);
+            console.log(dataToSubmit);
+            navigate('/dashboard');
+
 
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create event. Please try again.');
@@ -105,14 +126,30 @@ export const CreateEventPage = () => {
         }
     };
 
-    // --- JSX ---
-
     return (
         <div className="min-h-screen bg-base-200 p-4 md:p-8 flex justify-center items-center">
             <div className="card w-full max-w-4xl bg-base-100 shadow-xl">
                 <div className="card-body">
                     <h1 className="text-3xl font-bold text-center mb-6">Create New Event</h1>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        
+                        {/* --- NEW: Club Selection Dropdown --- */}
+                        <div className="form-control">
+                            <label className="label"><span className="label-text">Organizing Club</span></label>
+                            <select
+                                name="club"
+                                value={selectedClubId}
+                                onChange={handleClubChange}
+                                className={`select select-bordered w-full ${validationErrors.club && 'select-error'}`}
+                                disabled={clubsLoading}
+                            >
+                                <option value="" disabled>{clubsLoading ? 'Loading clubs...' : 'Select a club'}</option>
+                                {clubs.map((club) => (
+                                    <option key={club._id} value={club._id}>{club.name}</option>
+                                ))}
+                            </select>
+                            {validationErrors.club && <span className="text-error text-xs mt-1">{validationErrors.club}</span>}
+                        </div>
                         
                         {/* Title */}
                         <div className="form-control">
@@ -121,6 +158,8 @@ export const CreateEventPage = () => {
                             {validationErrors.title && <span className="text-error text-xs mt-1">{validationErrors.title}</span>}
                         </div>
 
+                        {/* ... (rest of the form fields remain exactly the same) ... */}
+                        
                         {/* Description */}
                         <div className="form-control">
                             <label className="label"><span className="label-text">Description</span></label>
@@ -183,6 +222,7 @@ export const CreateEventPage = () => {
                                 )}
                             </div>
                         </div>
+
 
                         {/* Global Error Message */}
                         {error && <div role="alert" className="alert alert-error text-sm"><span>{error}</span></div>}
