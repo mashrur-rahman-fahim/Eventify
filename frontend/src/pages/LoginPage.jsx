@@ -45,7 +45,7 @@ export const LoginPage = () => {
       }
       await api.post("/api/login", formData);
 
-      navigate("/");
+      navigate("/dashboard");
 
       console.log(response);
     } catch (error) {

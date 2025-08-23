@@ -3,19 +3,23 @@ import User from "../model/user.model.js";
 import { generateToken } from "../services/tokenService.js";
 import { sendVerificationEmail } from "../services/emailService.js";
 import mongoose from "mongoose";
-
-
+import Role from "../model/roles.model.js";
 export const registerUser = async (req, res) => {
   const session = await mongoose.startSession();
   try {
-
     session.startTransaction();
-    const { name, email, password } = req.body;
+
+    const { name, email, password, role } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
     const user = new User({ name, email, password });
+    const findRole = await Role.findOne({ level: role });
+    if (!findRole) {
+      return res.status(400).json({ message: "Role not found" });
+    }
+    user.role = findRole._id;
     await user.save({ session });
     const token = generateToken(user._id);
     await sendVerificationEmail(email, token);
@@ -55,7 +59,7 @@ export const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user._id);
-    
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -82,7 +86,7 @@ export const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id)
       .populate("roleId", "name level")
       .select("-password");
-    
+
     return res.status(200).json({
       user,
     });
@@ -119,7 +123,9 @@ export const deleteUser = async (req, res) => {
 };
 export const updateUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user._id, req.body, { new: true });
+    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+      new: true,
+    });
     return res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {
     console.log(error);

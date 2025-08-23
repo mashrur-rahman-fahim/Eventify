@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/getUserProfile",verify, getUserProfile);
+router.get("/getUserProfile", verify, getUserProfile);
 router.get("/logout", verify, logoutUser);
 router.delete("/deleteUser", verify, deleteUser);
 router.put("/updateUser", verify, updateUser);
