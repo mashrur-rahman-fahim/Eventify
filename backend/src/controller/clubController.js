@@ -403,3 +403,47 @@ export const getClubByUserId = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// Get all events from clubs where user is an admin
+export const getAdminClubEvents = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find all clubs where the user is an admin
+    const clubs = await Club.find({ admins: userId })
+      .populate({
+        path: 'events',
+        populate: [
+          {
+            path: 'clubId',
+            select: 'name'
+          },
+          {
+            path: 'createdBy',
+            select: 'name email'
+          }
+        ]
+      });
+
+    // Extract events from all clubs and flatten the array
+    const allEvents = clubs.flatMap(club => club.events);
+
+    // If you want to include club information with each event
+    const eventsWithClubInfo = clubs.flatMap(club => 
+      club.events.map(event => ({
+        ...event.toObject(),
+        clubName: club.name,
+        clubId: club._id
+      }))
+    );
+
+    res.status(200).json({
+      message: "Events retrieved successfully",
+      events: eventsWithClubInfo,
+      totalEvents: eventsWithClubInfo.length
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
