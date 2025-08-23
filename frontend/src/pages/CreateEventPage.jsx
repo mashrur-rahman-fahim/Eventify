@@ -95,7 +95,7 @@ export const CreateEventPage = () => {
         try {
             await api.post('/api/events/create', dataToSubmit);
             
-            navigate('/admin-dashboard'); // Redirect on success
+            navigate('/dashboard'); // Redirect on success
 
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create event. Please try again.');
