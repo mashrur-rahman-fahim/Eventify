@@ -8,6 +8,7 @@ import userRoute from "./route/userRoute.js";
 import verifyEmail from "./route/verifyEmail.js";
 import { sendVerificationEmail } from "./services/emailService.js";
 import verificationRoute from "./route/verificationRoute.js";
+import chatbotRoute from "./route/chatbotRoute.js";
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -66,6 +67,7 @@ app.use("/api", testRoute);
 app.use("/api", userRoute);
 app.use("/api", verifyEmail);
 app.use("/api", verificationRoute);
+app.use("/api", chatbotRoute);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

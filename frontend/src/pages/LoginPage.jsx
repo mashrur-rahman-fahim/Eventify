@@ -6,13 +6,15 @@ import { VerifyContext } from "../context/VerifyContext";
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { isVerified, isLoading, checkLogin } = useContext(VerifyContext);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     checkLogin();
   }, [checkLogin]);
+
 
   useEffect(() => {
     if (isVerified && !isLoading) {
@@ -38,21 +40,20 @@ export const LoginPage = () => {
     setError("");
 
     try {
-      await api.post("/api/login", formData);
-      checkLogin();
-      navigate("/");
-    } catch (err) {
-      if (err.response && err.response.data.needsVerification) {
-        await api.post("/api/resendVerificationEmail", { email: formData.email });
-        setError("Your email is not verified. A new verification email has been sent.");
-      } else if (err.response && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("An unexpected error occurred. Please try again.");
+
+      const response = await api.post("/api/isEmailVerified", formData);
+
+      if (!response.data.success) {
+        await api.post("/api/resendVerificationEmail", formData);
       }
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
+      await api.post("/api/login", formData);
+
+      navigate("/");
+
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+
     }
   };
 
