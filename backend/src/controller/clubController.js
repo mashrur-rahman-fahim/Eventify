@@ -409,3 +409,31 @@ export const getClubByUserId = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+export const getClubAdmins = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(clubId)) {
+      return res.status(400).json({ message: "Invalid club ID" });
+    }
+
+    const club = await Club.findById(clubId)
+      .populate("admins", "name email role")
+      .select("admins name");
+
+    if (!club) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+
+    res.status(200).json({
+      clubName: club.name,
+      admins: club.admins,
+      totalAdmins: club.admins.length
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
