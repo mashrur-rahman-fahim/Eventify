@@ -10,6 +10,10 @@ import { sendVerificationEmail } from "./services/emailService.js";
 import verificationRoute from "./route/verificationRoute.js";
 import chatbotRoute from "./route/chatbotRoute.js";
 import cookieParser from "cookie-parser";
+import eventRoute from "./route/eventRoutes.js";
+import clubRoutes from "./route/clubRoutes.js";
+import registrationRoutes from "./route/registrationRoutes";
+import certificateRoute from "./route/certificateRoute";
 
 dotenv.config();
 
@@ -68,6 +72,11 @@ app.use("/api", userRoute);
 app.use("/api", verifyEmail);
 app.use("/api", verificationRoute);
 app.use("/api", chatbotRoute);
+app.use("/api", eventRoute);
+app.use("/api", clubRoutes);
+app.use("/api", registrationRoutes);
+app.use("/api", certificateRoute);
+
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
