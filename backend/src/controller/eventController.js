@@ -86,7 +86,7 @@ export const getAllEvents = async (req, res) => {
   try {
     const { page = 1, limit = 10, category, search } = req.query;
     const query = { isActive: true };
-
+   console.log(query);
     // Filter by category
     if (category) {
       query.category = category;
@@ -107,6 +107,7 @@ export const getAllEvents = async (req, res) => {
       .sort({ date: 1, time: 1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
+    
 
     const total = await Event.countDocuments(query);
 

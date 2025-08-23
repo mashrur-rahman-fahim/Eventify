@@ -111,10 +111,12 @@ export const CreateEventPage = () => {
         }
 
         try {
+
             // Use the selectedClubId to build the dynamic URL
             await api.post(`/api/event/create/${selectedClubId}`, dataToSubmit);
             console.log(dataToSubmit);
             navigate('/dashboard');
+
 
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create event. Please try again.');
