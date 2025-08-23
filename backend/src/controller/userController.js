@@ -103,3 +103,26 @@ export const logoutUser = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.clearCookie("token");
+    await user.deleteOne();
+    return res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export const updateUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.user._id, req.body, { new: true });
+    return res.status(200).json({ message: "User updated successfully", user });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
