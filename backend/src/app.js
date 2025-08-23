@@ -75,8 +75,9 @@ app.use("/api", chatbotRoute);
 app.use("/api", roleRoute);
 app.use("/api", clubRoute);
 app.use("/api", eventRoute);
+app.use("/api", registrationRoute);
 app.use("/api/certificates", certificateRoute);
-app.use("/api/registrations", registrationRoute);
+
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
