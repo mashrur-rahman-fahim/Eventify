@@ -16,11 +16,11 @@ const router = express.Router();
 // router.use(verify);
 
 // Event routes
-router.post("/create/:clubId", verify, isAdmin, createEvent);
-router.get("/getAll", getAllEvents);
-router.get("/getEvent/:eventId", getEventById);
-router.put("/update/:eventId",verify, isAdmin, updateEvent);
-router.delete("/delete/:eventId", verify, isAdmin, deleteEvent);
-router.get("/club/:clubId", getEventsByClub);
+router.post("/event/create/:clubId", verify, isAdmin, createEvent);
+router.get("/event/getAll", getAllEvents);
+router.get("/event/getEvent/:eventId", getEventById);
+router.put("/event/update/:eventId",verify, isAdmin, updateEvent);
+router.delete("/event/delete/:eventId", verify, isAdmin, deleteEvent);
+router.get("/event/club/:clubId", getEventsByClub);
 
 export default router;
