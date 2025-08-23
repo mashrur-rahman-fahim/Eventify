@@ -4,6 +4,7 @@ import Role from "../model/roles.model.js";
 export const verify = async (req, res, next) => {
   try {
     const token = req.cookies.token;
+   
     if (!token) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -18,6 +19,7 @@ export const verify = async (req, res, next) => {
     if (!user.emailVerified) {
       return res.status(401).json({ message: "Email not verified" });
     }
+    
     req.user = user;
     next();
   } catch (error) {

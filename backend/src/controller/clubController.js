@@ -11,8 +11,8 @@ export const createClub = async (req, res) => {
 
     // Check if user has permission to create clubs (ClubAdmin)
     if (!req.user.role.permissions.canCreateEvents) {
-      return res.status(403).json({ 
-        message: "You don't have permission to create clubs" 
+      return res.status(403).json({
+        message: "You don't have permission to create clubs",
       });
     }
 
@@ -20,18 +20,18 @@ export const createClub = async (req, res) => {
       name,
       description,
       userId,
-      admins: [userId], 
+      admins: [userId],
     });
 
     await club.save();
 
     await User.findByIdAndUpdate(userId, {
-      $push: { clubs: club._id }
+      $push: { clubs: club._id },
     });
 
     res.status(201).json({
       message: "Club created successfully",
-      club
+      club,
     });
   } catch (error) {
     console.error(error);
@@ -42,8 +42,7 @@ export const createClub = async (req, res) => {
 // Get all clubs
 export const getAllClubs = async (req, res) => {
   try {
-    const clubs = await Club.find()
-      .populate("admins", "name email");
+    const clubs = await Club.find().populate("admins", "name email");
 
     res.status(200).json({ clubs });
   } catch (error) {
@@ -95,19 +94,19 @@ export const updateClub = async (req, res) => {
 
     // Check if user has permission to edit clubs
     if (!req.user.role.permissions.canEditEvents) {
-      return res.status(403).json({ 
-        message: "You don't have permission to edit clubs" 
+      return res.status(403).json({
+        message: "You don't have permission to edit clubs",
       });
     }
 
     // Check if user is club admin or creator
-    const isAdmin = club.admins.some(adminId => 
-      adminId.toString() === req.user._id.toString()
+    const isAdmin = club.admins.some(
+      (adminId) => adminId.toString() === req.user._id.toString()
     );
-    
+
     if (!isAdmin && club.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        message: "Only club admins can update club details" 
+      return res.status(403).json({
+        message: "Only club admins can update club details",
       });
     }
 
@@ -119,7 +118,7 @@ export const updateClub = async (req, res) => {
 
     res.status(200).json({
       message: "Club updated successfully",
-      club: updatedClub
+      club: updatedClub,
     });
   } catch (error) {
     console.error(error);
@@ -296,35 +295,37 @@ export const leaveClub = async (req, res) => {
     }
 
     // Check if user is an admin of this club
-    const isAdmin = club.admins.some(adminId => 
-      adminId.toString() === userId.toString()
+    const isAdmin = club.admins.some(
+      (adminId) => adminId.toString() === userId.toString()
     );
-    
+
     if (!isAdmin) {
-      return res.status(400).json({ message: "You are not an admin of this club" });
+      return res
+        .status(400)
+        .json({ message: "You are not an admin of this club" });
     }
 
     // If this is the last admin, delete the club
     if (club.admins.length === 1) {
       // Delete all events associated with this club
       await Event.deleteMany({ clubId });
-      
+
       // Remove club from all admins' clubs array
       await User.updateMany(
         { _id: { $in: club.admins } },
         { $pull: { clubs: clubId } }
       );
-      
+
       await Club.findByIdAndDelete(clubId);
-      
-      return res.status(200).json({ 
-        message: "You were the last admin. The club has been deleted." 
+
+      return res.status(200).json({
+        message: "You were the last admin. The club has been deleted.",
       });
     }
 
     // Remove user from admins
-    club.admins = club.admins.filter(adminId => 
-      adminId.toString() !== userId.toString()
+    club.admins = club.admins.filter(
+      (adminId) => adminId.toString() !== userId.toString()
     );
 
     // If the leaving user is the creator, transfer ownership to another admin
@@ -337,7 +338,7 @@ export const leaveClub = async (req, res) => {
 
     // Remove club from user's clubs array
     await User.findByIdAndUpdate(userId, {
-      $pull: { clubs: clubId }
+      $pull: { clubs: clubId },
     });
 
     res.status(200).json({ message: "You have left the club successfully" });
@@ -363,15 +364,15 @@ export const deleteClub = async (req, res) => {
 
     // Check if user has permission to delete clubs
     if (!req.user.role.permissions.canDeleteEvents) {
-      return res.status(403).json({ 
-        message: "You don't have permission to delete clubs" 
+      return res.status(403).json({
+        message: "You don't have permission to delete clubs",
       });
     }
 
     // Check if user is the creator
     if (club.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        message: "Only the club creator can delete the club" 
+      return res.status(403).json({
+        message: "Only the club creator can delete the club",
       });
     }
 
