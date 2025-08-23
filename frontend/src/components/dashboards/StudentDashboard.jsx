@@ -7,14 +7,11 @@ const StudentDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // NOTE: You'll need to create this backend endpoint
-    const apiEndpoint = '/api/users/my-registered-events';
-
     useEffect(() => {
         const fetchRegisteredEvents = async () => {
             try {
                 setLoading(true);
-                const response = await api.get(apiEndpoint);
+                const response = await api.get('');
                 setRegisteredEvents(response.data);
             } catch (err) {
                 setError('Failed to load your events.');
@@ -29,7 +26,7 @@ const StudentDashboard = () => {
     const handleUnregister = async (eventId) => {
          if (window.confirm('Are you sure you want to unregister from this event?')) {
             try {
-                // NOTE: You'll need to create this backend endpoint
+                // NOTE: create this in backend!!
                 await api.post(`/api/events/unregister/${eventId}`);
                 setRegisteredEvents(registeredEvents.filter(event => event._id !== eventId));
             } catch (err) {

@@ -3,8 +3,8 @@ import api from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
 import { Navbar } from "../components/Navbar";
-import AdminDashboard from "../components/dashboards/AdminDashboard"; // Import AdminDashboard
-import StudentDashboard from "../components/dashboards/StudentDashboard"; // Import StudentDashboard
+import AdminDashboard from "../components/dashboards/AdminDashboard"; 
+import StudentDashboard from "../components/dashboards/StudentDashboard"; 
 
 export const DashboardPage = () => {
     const navigate = useNavigate();
@@ -12,7 +12,7 @@ export const DashboardPage = () => {
 
     useEffect(() => {
         checkLogin();
-    }, [checkLogin]);
+    }, []);
 
     useEffect(() => {
         if (!isVerified && !isLoading) {
@@ -30,7 +30,6 @@ export const DashboardPage = () => {
         }
     };
 
-    // Show a loading screen while verifying auth status
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-base-200">
@@ -44,7 +43,6 @@ export const DashboardPage = () => {
             <Navbar handleLogout={handleLogout} />
 
             <main className="container mx-auto p-4 md:p-8">
-                {/* Conditionally render the correct dashboard based on the isAdmin flag */}
                 {isVerified && (
                     isAdmin ? <AdminDashboard /> : <StudentDashboard />
                 )}

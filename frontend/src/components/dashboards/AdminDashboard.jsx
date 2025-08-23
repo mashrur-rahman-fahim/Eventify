@@ -8,7 +8,6 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // NOTE: You'll need to create this backend endpoint
     const apiEndpoint = '/api/events/admin/my-events';
 
     useEffect(() => {
@@ -19,7 +18,7 @@ const AdminDashboard = () => {
                 const myEvents = response.data;
                 setEvents(myEvents);
 
-                // Calculate stats
+
                 const upcomingCount = myEvents.filter(e => new Date(e.date) >= new Date()).length;
                 const totalAttendeesCount = myEvents.reduce((acc, e) => acc + e.attendees.length, 0);
                 setStats({ totalEvents: myEvents.length, upcoming: upcomingCount, totalAttendees: totalAttendeesCount });
