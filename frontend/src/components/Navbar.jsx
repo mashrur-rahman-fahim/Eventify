@@ -10,7 +10,6 @@ export const Navbar = ({ handleLogout }) => {
     const navLinks = isAdmin ? (
         <>
             {/* Admin Links */}
-            <li><Link to="/admin-dashboard">Dashboard</Link></li>
             <li><Link to="/create-event">Create Event</Link></li>
             <li><Link to="/manage-users">Manage Users</Link></li>
         </>
