@@ -9,8 +9,9 @@ import ChatbotPage from "./pages/ChatbotPage";
 import { ChatbotProvider } from "./context/ChatbotContext";
 import ChatbotWidget from "./components/ChatbotWidget";
 import { LandingPage } from "./pages/LandingPage";
-import { CreateEventPage } from "./pages/CreateEventPage";
+import CreateEventPage from "./pages/CreateEventPage";
 import { ClubPage } from "./pages/ClubPage";
+import { SingleEventPage } from "./pages/SingleEventPage";
 function App() {
   return (
     <ChatbotProvider>
@@ -25,6 +26,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/create-event" element={<CreateEventPage />} />
           <Route path="/club" element={<ClubPage />} />
+          <Route path="/event/:id" element={<SingleEventPage />} />
         </Routes>
         <ChatbotWidget />
       </BrowserRouter>

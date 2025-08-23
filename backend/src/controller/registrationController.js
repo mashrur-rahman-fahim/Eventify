@@ -14,6 +14,7 @@ export const registerForEvent = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
       return res.status(400).json({ message: "Invalid event ID" });
     }
+    
 
     const event = await Event.findById(eventId);
     if (!event) {
@@ -24,7 +25,6 @@ export const registerForEvent = async (req, res) => {
     if (!event.isActive) {
       return res.status(400).json({ message: "Event registration is closed" });
     }
-
     // Check if registration deadline has passed
     if (new Date() > event.registrationDeadline) {
       return res
@@ -38,6 +38,7 @@ export const registerForEvent = async (req, res) => {
         eventId,
         status: { $in: ["registered", "attended"] },
       });
+    
 
       if (currentAttendees >= event.maxAttendees) {
         return res.status(400).json({ message: "Event is full" });
@@ -54,6 +55,7 @@ export const registerForEvent = async (req, res) => {
         .status(400)
         .json({ message: "You are already registered for this event" });
     }
+  
 
     const registration = new Registration({
       userId,
@@ -70,7 +72,7 @@ export const registerForEvent = async (req, res) => {
 
     // Add event to user's registeredEvents array
     await User.findByIdAndUpdate(userId, {
-      $push: { registeredEvents: eventId }
+      $push: { registeredEvents: eventId },
     });
 
     res.status(201).json({
@@ -107,7 +109,7 @@ export const unregisterFromEvent = async (req, res) => {
 
     // Remove event from user's registeredEvents array
     await User.findByIdAndUpdate(userId, {
-      $pull: { registeredEvents: eventId }
+      $pull: { registeredEvents: eventId },
     });
 
     res.status(200).json({ message: "Unregistered from event successfully" });
@@ -163,7 +165,7 @@ export const getEventRegistrations = async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    const role=await Role.findById(req.user.role)
+    const role = await Role.findById(req.user.role);
 
     // Check if user has permission to manage attendees
     if (!role.permissions.canManageAttendees) {
@@ -230,7 +232,7 @@ export const updateRegistrationStatus = async (req, res) => {
     if (!registration) {
       return res.status(404).json({ message: "Registration not found" });
     }
-    const role=await Role.findById(req.user.role)
+    const role = await Role.findById(req.user.role);
     // Check if user has permission to manage attendees
     if (!role.permissions.canManageAttendees) {
       return res.status(403).json({
@@ -276,6 +278,28 @@ export const updateRegistrationStatus = async (req, res) => {
       message: "Registration status updated successfully",
       registration,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getRegistrationByUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { eventId } = req.params;
+
+    // Validate eventId
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const registrations = await Registration.find({ eventId, userId });
+    if(registrations.length > 0){
+      res.status(200).json({ success:true });
+    }else{
+      res.status(200).json({ success:false });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
