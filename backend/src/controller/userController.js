@@ -132,3 +132,21 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+export const searchUserByName = async (req, res) => {
+  try {
+    const { characters } = req.query;
+    if (!characters) {
+      return res.status(400).json({ message: "Characters are required" });
+    }
+    const regexPattern = `^[${characters}]`;
+    const users = await User.find({
+      name: { $regex: regexPattern, $options: "i" },
+    })
+      .select("-password")
+      .limit(10);
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};

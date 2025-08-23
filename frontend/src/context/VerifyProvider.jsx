@@ -10,6 +10,7 @@ export const VerifyProvider = ({children}) => {
             setIsLoading(true);
             const response = await api.get("/api/isLoggedIn");
             setIsVerified(true);
+           
            if(response.data.role===1){
             setIsAdmin(true);
            }
