@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* React Toastify CSS */
+@import "react-toastify/dist/ReactToastify.css";
+
+/* Custom toast responsive styles */
+@media (max-width: 640px) {
+  .Toastify__toast-container {
+    width: 100% !important;
+    padding: 0 1rem !important;
+  }
+
+  .Toastify__toast {
+    margin-bottom: 0.5rem !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .Toastify__toast-body {
+    font-size: 0.875rem !important;
+    padding: 0.75rem !important;
+  }
+}
+
+/* Dark theme support for toasts */
+[data-theme="dark"] .Toastify__toast {
+  background: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+[data-theme="dark"] .Toastify__toast--success {
+  background: #065f46 !important;
+}
+
+[data-theme="dark"] .Toastify__toast--error {
+  background: #991b1b !important;
+}
+
+[data-theme="dark"] .Toastify__toast--warning {
+  background: #92400e !important;
+}
+
+[data-theme="dark"] .Toastify__toast--info {
+  background: #1e40af !important;
+}

@@ -3,6 +3,7 @@ import api from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
 import ThemeSwitcher from "../components/ThemeSwitcher";
+import { appToasts } from "../utils/toast";
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -167,9 +168,9 @@ export const RegisterPage = () => {
         role: formData.role,
         password: formData.password,
       });
-      setSuccess(
-        "Registration successful! Please check your email to verify your account."
-      );
+
+      appToasts.registrationSuccess();
+
       // Clear form
       setFormData({
         name: "",
@@ -181,9 +182,12 @@ export const RegisterPage = () => {
       setPasswordStrength({ score: 0, feedback: "" });
     } catch (err) {
       if (err.response && err.response.data.message) {
-        setError(err.response.data.message);
+        appToasts.error(err.response.data.message, "Registration Failed");
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        appToasts.error(
+          "An unexpected error occurred. Please try again.",
+          "Registration Failed"
+        );
       }
       console.error(err);
     }

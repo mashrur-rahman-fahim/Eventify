@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import api from "../utils/api";
+import { appToasts } from "../utils/toast";
 
 const ClubsDashboard = () => {
   const [allClubs, setAllClubs] = useState([]);
@@ -41,7 +42,9 @@ const ClubsDashboard = () => {
 
       try {
         setIsSearching(true);
-        const response = await api.get(`/api/club/search?characters=${searchValue}`);
+        const response = await api.get(
+          `/api/club/search?characters=${searchValue}`
+        );
         setFilteredClubs(response.data.clubs);
         setCurrentPage(1);
       } catch (err) {
@@ -70,11 +73,17 @@ const ClubsDashboard = () => {
   const requestToJoinClub = async (clubId) => {
     try {
       const response = await api.post(`/api/club/join/${clubId}`);
-      setSuccessMessage("Join request sent successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+
+      // Find the club name for the toast
+      const club = allClubs.find((c) => c._id === clubId);
+      const clubName = club?.name || "Club";
+
+      appToasts.joinRequestSent(clubName);
     } catch (err) {
-      setError("Failed to send join request. Please try again.");
-      setTimeout(() => setError(""), 3000);
+      appToasts.error(
+        "Failed to send join request. Please try again.",
+        "Join Request Failed"
+      );
       console.error(err);
     }
   };
@@ -94,9 +103,11 @@ const ClubsDashboard = () => {
       <div className="card-body">
         <h2 className="card-title text-xl font-bold">
           {club.name}
-          <div className="badge badge-secondary">{club.admins?.length || 0} admins</div>
+          <div className="badge badge-secondary">
+            {club.admins?.length || 0} admins
+          </div>
         </h2>
-        
+
         <p className="text-base-content/70 line-clamp-3 mb-4">
           {club.description}
         </p>
@@ -115,7 +126,7 @@ const ClubsDashboard = () => {
         </div>
 
         <div className="card-actions justify-end">
-          <button 
+          <button
             className="btn btn-primary btn-sm"
             onClick={() => requestToJoinClub(club._id)}
           >
@@ -135,9 +146,7 @@ const ClubsDashboard = () => {
             </svg>
             Join Club
           </button>
-          <button className="btn btn-ghost btn-sm">
-            View Details
-          </button>
+          <button className="btn btn-ghost btn-sm">View Details</button>
         </div>
       </div>
     </div>
@@ -369,9 +378,13 @@ const ClubsDashboard = () => {
                 </svg>
               </div>
               <div className="stat-title">Total Clubs</div>
-              <div className="stat-value text-primary">{filteredClubs.length}</div>
+              <div className="stat-value text-primary">
+                {filteredClubs.length}
+              </div>
               <div className="stat-desc">
-                {searchTerm ? `Filtered from ${allClubs.length} total` : "Active communities"}
+                {searchTerm
+                  ? `Filtered from ${allClubs.length} total`
+                  : "Active communities"}
               </div>
             </div>
 

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import { DashboardPage } from "./pages/DashboardPage";
 import { TestPage } from "./pages/TestPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -27,6 +28,7 @@ import { MyEventPage } from "./pages/MyEventPage";
 import { CertificatePage } from "./pages/CertificatePage";
 import EventManagementPage from "./pages/EventManagementPage";
 import Profile from "./pages/Profile";
+import ToastDemo from "./components/ToastDemo";
 
 function App() {
   // Set default theme to "dark" on app initialization
@@ -75,8 +77,22 @@ function App() {
               path="/event/manage/:eventId"
               element={<EventManagementPage />}
             />
+            <Route path="/toast-demo" element={<ToastDemo />} />
           </Routes>
           <ChatbotWidget />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            style={{ zIndex: 9999 }}
+          />
         </BrowserRouter>
       </ChatbotProvider>
     </UserProvider>

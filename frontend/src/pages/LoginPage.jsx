@@ -3,6 +3,7 @@ import api from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
 import ThemeSwitcher from "../components/ThemeSwitcher";
+import { appToasts } from "../utils/toast";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -40,19 +41,19 @@ export const LoginPage = () => {
 
     // Enhanced form validation
     if (!formData.email.trim()) {
-      setError("Email is required");
+      appToasts.validationError("email");
       return;
     }
 
     if (!formData.password.trim()) {
-      setError("Password is required");
+      appToasts.validationError("password");
       return;
     }
 
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError("Please enter a valid email address");
+      appToasts.error("Please enter a valid email address", "Invalid Email");
       return;
     }
 
@@ -64,13 +65,17 @@ export const LoginPage = () => {
       }
       const loginResponse = await api.post("/api/login", formData);
       if (loginResponse.status === 200) {
+        appToasts.loginSuccess();
         navigate("/dashboard");
       } else {
-        setError(loginResponse.data.message);
+        appToasts.error(loginResponse.data.message, "Login Failed");
       }
     } catch (error) {
       console.log(error);
-      setError("Login failed. Please check your credentials and try again.");
+      appToasts.error(
+        "Login failed. Please check your credentials and try again.",
+        "Login Failed"
+      );
     }
   };
 

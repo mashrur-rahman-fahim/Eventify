@@ -1,12 +1,15 @@
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 import api from "../utils/api";
+import { appToasts } from "../utils/toast";
 
 const JoinRequestsManager = ({ club, onRequestProcessed }) => {
   const [processedRequests, setProcessedRequests] = useState({});
-  const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState({});
 
   const handleRequest = async (requestId, action) => {
     try {
+      setLoading((prev) => ({ ...prev, [requestId]: true }));
+
       await api.post(`/api/club/process-request/${club._id}/${requestId}`, {
         action, // "approve" or "reject"
       });
@@ -21,20 +24,16 @@ const JoinRequestsManager = ({ club, onRequestProcessed }) => {
       await onRequestProcessed();
 
       // Show toast
-      setToast({
-        type: action === "approve" ? "success" : "error",
-        message:
-          action === "approve"
-            ? "Request approved successfully ✅"
-            : "Request rejected ❌",
-      });
-
-      // Remove toast after 3 seconds
-      setTimeout(() => setToast(null), 3000);
+      if (action === "approve") {
+        appToasts.joinRequestApproved(club.name);
+      } else {
+        appToasts.joinRequestRejected(club.name);
+      }
     } catch (err) {
       console.error("Failed to process request", err);
-      setToast({ type: "error", message: "Something went wrong ⚠️" });
-      setTimeout(() => setToast(null), 3000);
+      appToasts.serverError();
+    } finally {
+      setLoading((prev) => ({ ...prev, [requestId]: false }));
     }
   };
 
@@ -55,24 +54,34 @@ const JoinRequestsManager = ({ club, onRequestProcessed }) => {
             className="flex justify-between items-center p-4 bg-base-100 rounded-lg shadow"
           >
             <div>
-              <p className="font-medium">{req.userId?.name || "Unknown User"}</p>
-              <p className="text-sm text-base-content/70">{req.userId?.email}</p>
+              <p className="font-medium">
+                {req.userId?.name || "Unknown User"}
+              </p>
+              <p className="text-sm text-base-content/70">
+                {req.userId?.email}
+              </p>
             </div>
 
             <div className="flex gap-2">
               {!processedRequests[req._id] && (
                 <>
                   <button
-                    className="btn btn-success btn-sm"
+                    className={`btn btn-success btn-sm ${
+                      loading[req._id] ? "loading" : ""
+                    }`}
                     onClick={() => handleRequest(req._id, "approve")}
+                    disabled={loading[req._id]}
                   >
-                    Approve
+                    {!loading[req._id] && "Approve"}
                   </button>
                   <button
-                    className="btn btn-error btn-sm"
+                    className={`btn btn-error btn-sm ${
+                      loading[req._id] ? "loading" : ""
+                    }`}
                     onClick={() => handleRequest(req._id, "reject")}
+                    disabled={loading[req._id]}
                   >
-                    Reject
+                    {!loading[req._id] && "Reject"}
                   </button>
                 </>
               )}
@@ -80,19 +89,6 @@ const JoinRequestsManager = ({ club, onRequestProcessed }) => {
           </div>
         ))}
       </div>
-
-      {/* Toast */}
-      {toast && (
-        <div className="toast toast-top toast-end z-50">
-          <div
-            className={`alert shadow-lg ${
-              toast.type === "success" ? "alert-success" : "alert-error"
-            }`}
-          >
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
     </>
   );
 };

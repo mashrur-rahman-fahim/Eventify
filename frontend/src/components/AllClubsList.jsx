@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
+import { appToasts } from "../utils/toast";
 
 const AllClubsList = () => {
   const [allClubs, setAllClubs] = useState([]);
@@ -43,6 +44,10 @@ const AllClubsList = () => {
       setJoinRequestLoading((prev) => ({ ...prev, [clubId]: true }));
       await api.post(`/api/club/join/${clubId}`);
 
+      // Find the club name for the toast
+      const club = allClubs.find((c) => c._id === clubId);
+      const clubName = club?.name || "Club";
+
       // Update the club's join requests in local state
       setAllClubs((prevClubs) =>
         prevClubs.map((club) =>
@@ -50,12 +55,13 @@ const AllClubsList = () => {
         )
       );
 
-      alert("Join request sent successfully!");
+      // Show success toast
+      appToasts.joinRequestSent(clubName);
     } catch (err) {
       console.error("Failed to send join request:", err);
       const errorMessage =
         err.response?.data?.message || "Failed to send join request";
-      alert(errorMessage);
+      appToasts.error(errorMessage, "Join Request Failed");
     } finally {
       setJoinRequestLoading((prev) => ({ ...prev, [clubId]: false }));
     }
