@@ -35,6 +35,8 @@ export const EditEventPage = () => {
         // Pre-format the data to correctly populate the form inputs
         const formattedEvent = {
           ...event,
+          // Ensure clubId is a string, not an object
+          clubId: event.clubId._id || event.clubId,
           date: formatDateForInput(event.date),
           registrationDeadline: formatDateTimeForInput(
             event.registrationDeadline
@@ -103,9 +105,25 @@ export const EditEventPage = () => {
     setLoading(true);
     try {
       const dataToSubmit = new FormData();
-      for (const key in formData) {
-        dataToSubmit.append(key, formData[key]);
-      }
+
+      // Only include fields that should be updated
+      const fieldsToUpdate = [
+        "title",
+        "description",
+        "date",
+        "time",
+        "location",
+        "category",
+        "maxAttendees",
+        "registrationDeadline",
+      ];
+
+      fieldsToUpdate.forEach((field) => {
+        if (formData[field] !== null && formData[field] !== undefined) {
+          dataToSubmit.append(field, formData[field]);
+        }
+      });
+
       if (imageFile) {
         dataToSubmit.append("image", imageFile);
       }

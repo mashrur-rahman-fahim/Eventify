@@ -4,7 +4,7 @@ import Role from "../model/roles.model.js";
 export const verify = async (req, res, next) => {
   try {
     const token = req.cookies.token;
-   
+
     if (!token) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -19,7 +19,7 @@ export const verify = async (req, res, next) => {
     if (!user.emailVerified) {
       return res.status(401).json({ message: "Email not verified" });
     }
-    
+
     req.user = user;
     next();
   } catch (error) {
@@ -29,16 +29,12 @@ export const verify = async (req, res, next) => {
 };
 export const isLoggedIn = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    const role = await Role.findById(user.role);
+    // req.user is already the full user object from verify middleware
+    const role = await Role.findById(req.user.role);
 
     return res.status(200).json({
       message: "User logged in successfully",
-      user,
+      user: req.user,
       role: role.level,
     });
   } catch (error) {
