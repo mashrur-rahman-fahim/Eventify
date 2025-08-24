@@ -36,6 +36,7 @@ export const UserProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Initial fetch on mount
   useEffect(() => {
     fetchUser();
   }, []);

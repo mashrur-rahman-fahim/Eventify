@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../utils/api";
 import { VerifyContext } from "./VerifyContext";
 
@@ -29,6 +29,11 @@ export const VerifyProvider = ({ children }) => {
     setIsVerified(false);
     setIsAdmin(false);
   };
+
+  // Auto-check login status on mount
+  useEffect(() => {
+    checkLogin();
+  }, []);
 
   return (
     <VerifyContext.Provider

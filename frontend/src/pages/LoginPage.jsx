@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import api from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
+import { useUser } from "../context/UserContext";
 import { useLoading } from "../context/LoadingContext";
 import { LoadingButton } from "../components/loading";
 import ThemeSwitcher from "../components/ThemeSwitcher";
@@ -10,6 +11,7 @@ import { appToasts } from "../utils/toast";
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { isVerified, isLoading, checkLogin } = useContext(VerifyContext);
+  const { updateUser } = useUser();
   const { withLoading } = useLoading();
 
   const [error, setError] = useState("");
@@ -71,6 +73,15 @@ export const LoginPage = () => {
         }
         const loginResponse = await api.post("/api/login", formData);
         if (loginResponse.status === 200) {
+          // Fetch complete user profile to get populated role and image data
+          try {
+            const userProfileResponse = await api.get("/api/getUserProfile");
+            updateUser(userProfileResponse.data.user);
+          } catch (profileError) {
+            // Fallback to login response data if profile fetch fails
+            console.error("Failed to fetch user profile:", profileError);
+            updateUser(loginResponse.data.user);
+          }
           appToasts.loginSuccess();
           navigate("/dashboard");
         } else {
