@@ -7,7 +7,7 @@ export const LandingPage = () => {
   const navigate = useNavigate();
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
     if (isVerified && !isLoading) {
@@ -67,22 +67,26 @@ export const LandingPage = () => {
     const steps = 60;
     const stepTime = duration / steps;
 
-    const timers = Object.keys(targets).map((key) => {
+    const timers = [];
+
+    Object.keys(targets).forEach((key) => {
       const target = targets[key];
       const increment = target / steps;
       let current = 0;
 
-      return setInterval(() => {
+      const timer = setInterval(() => {
         current += increment;
         if (current >= target) {
           current = target;
-          clearInterval(timers.find((t) => t === timer));
+          clearInterval(timer);
         }
         setAnimatedNumbers((prev) => ({ ...prev, [key]: Math.floor(current) }));
       }, stepTime);
-    });
 
-    return () => timers.forEach((timer) => clearInterval(timer));
+      timers.push(timer);
+    });
+    // Cleanup function
+    return () => timers.forEach(clearInterval);
   }, []);
 
   const features = [
@@ -203,13 +207,13 @@ export const LandingPage = () => {
 
       {/* Hero Section with Carousel */}
       <section className="relative overflow-hidden">
-        <div className="carousel w-full h-screen">
+        <div className="carousel w-full h-screen relative"> {/* Added relative here */}
           {heroSlides.map((slide, index) => (
             <div
               key={index}
-              className={`carousel-item relative w-full transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0 absolute"
-              }`}
+              className={`carousel-item absolute w-full h-full transition-opacity duration-1000 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+                }`}
+              style={{ transform: 'none' }} // Prevent default carousel translation
             >
               <div
                 className="w-full h-full bg-cover bg-center bg-no-repeat"
@@ -248,9 +252,8 @@ export const LandingPage = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                index === currentSlide ? "bg-white" : "bg-white bg-opacity-50"
-              }`}
+              className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? "bg-white" : "bg-white bg-opacity-50"
+                }`}
             />
           ))}
         </div>
