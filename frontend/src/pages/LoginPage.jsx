@@ -2,15 +2,19 @@ import React, { useContext, useEffect, useState } from "react";
 import api from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
+import { useLoading } from "../context/LoadingContext";
+import { LoadingButton } from "../components/loading";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import { appToasts } from "../utils/toast";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { isVerified, isLoading, checkLogin } = useContext(VerifyContext);
+  const { withLoading } = useLoading();
 
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     checkLogin();
@@ -57,25 +61,30 @@ export const LoginPage = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      const response = await api.post("/api/isEmailVerified", formData);
+      await withLoading('login', 'Signing you in...', async () => {
+        const response = await api.post("/api/isEmailVerified", formData);
 
-      if (!response.data.success) {
-        await api.post("/api/resendVerificationEmail", formData);
-      }
-      const loginResponse = await api.post("/api/login", formData);
-      if (loginResponse.status === 200) {
-        appToasts.loginSuccess();
-        navigate("/dashboard");
-      } else {
-        appToasts.error(loginResponse.data.message, "Login Failed");
-      }
+        if (!response.data.success) {
+          await api.post("/api/resendVerificationEmail", formData);
+        }
+        const loginResponse = await api.post("/api/login", formData);
+        if (loginResponse.status === 200) {
+          appToasts.loginSuccess();
+          navigate("/dashboard");
+        } else {
+          appToasts.error(loginResponse.data.message, "Login Failed");
+        }
+      });
     } catch (error) {
       console.log(error);
       appToasts.error(
         "Login failed. Please check your credentials and try again.",
         "Login Failed"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -272,7 +281,12 @@ export const LoginPage = () => {
 
               {/* Submit Button */}
               <div className="form-control">
-                <button type="submit" className="btn btn-primary w-full h-12">
+                <LoadingButton 
+                  type="submit" 
+                  className="btn-primary w-full h-12"
+                  loading={isSubmitting}
+                  loadingText="Signing In..."
+                >
                   <svg
                     className="w-5 h-5 mr-2"
                     fill="none"
@@ -287,7 +301,7 @@ export const LoginPage = () => {
                     />
                   </svg>
                   Sign In
-                </button>
+                </LoadingButton>
               </div>
             </form>
 

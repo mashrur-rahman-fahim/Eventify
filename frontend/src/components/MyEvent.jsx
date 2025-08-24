@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import api from "../utils/api";
 import { EventCard } from "./EventCard";
 import { EventCardSkeleton } from "./EventCardSkeleton";
+import { LoadingCard } from "./loading";
 
 const MyEvent = () => {
   const [events, setEvents] = useState([]);

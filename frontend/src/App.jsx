@@ -11,6 +11,8 @@ import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import { ChatbotProvider } from "./context/ChatbotContext";
 import { UserProvider } from "./context/UserContext";
+import { LoadingProvider } from "./context/LoadingContext";
+import { GlobalLoadingOverlay } from "./components/loading";
 import ChatbotWidget from "./components/ChatbotWidget";
 import { LandingPage } from "./pages/LandingPage";
 import CreateEventPage from "./pages/CreateEventPage";
@@ -43,59 +45,62 @@ function App() {
   }, []);
 
   return (
-    <UserProvider>
-      <ChatbotProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/test" element={<TestPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/verify/:token" element={<VerifyEmail />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route
-              path="/reset-password/:token"
-              element={<ResetPasswordPage />}
+    <LoadingProvider>
+      <UserProvider>
+        <ChatbotProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/test" element={<TestPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/verify/:token" element={<VerifyEmail />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route
+                path="/reset-password/:token"
+                element={<ResetPasswordPage />}
+              />
+              <Route path="/chatbot" element={<ChatbotPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/create-event" element={<CreateEventPage />} />
+              <Route path="/club" element={<ClubPage />} />
+              <Route path="/profile" element={<Profile />} />
+
+              <Route path="/event/edit/:eventId" element={<EditEventPage />} />
+              <Route path="/club/edit/:clubId" element={<EditClubPage />} />
+
+              <Route path="/club-dashboard" element={<ClubsDashboard />} />
+              <Route path="/club-management" element={<ClubManagementPage />} />
+
+              <Route path="/event/:id" element={<SingleEventPage />} />
+              <Route path="/events" element={<AllEventPage />} />
+              <Route path="/my-events" element={<MyEventPage />} />
+              <Route path="/certificates" element={<CertificatePage />} />
+              <Route
+                path="/event/manage/:eventId"
+                element={<EventManagementPage />}
+              />
+              <Route path="/toast-demo" element={<ToastDemo />} />
+            </Routes>
+            <ChatbotWidget />
+            <GlobalLoadingOverlay />
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
+              style={{ zIndex: 9999 }}
             />
-            <Route path="/chatbot" element={<ChatbotPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/create-event" element={<CreateEventPage />} />
-            <Route path="/club" element={<ClubPage />} />
-            <Route path="/profile" element={<Profile />} />
-
-            <Route path="/event/edit/:eventId" element={<EditEventPage />} />
-            <Route path="/club/edit/:clubId" element={<EditClubPage />} />
-
-            <Route path="/club-dashboard" element={<ClubsDashboard />} />
-            <Route path="/club-management" element={<ClubManagementPage />} />
-
-            <Route path="/event/:id" element={<SingleEventPage />} />
-            <Route path="/events" element={<AllEventPage />} />
-            <Route path="/my-events" element={<MyEventPage />} />
-            <Route path="/certificates" element={<CertificatePage />} />
-            <Route
-              path="/event/manage/:eventId"
-              element={<EventManagementPage />}
-            />
-            <Route path="/toast-demo" element={<ToastDemo />} />
-          </Routes>
-          <ChatbotWidget />
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="dark"
-            style={{ zIndex: 9999 }}
-          />
-        </BrowserRouter>
-      </ChatbotProvider>
-    </UserProvider>
+          </BrowserRouter>
+        </ChatbotProvider>
+      </UserProvider>
+    </LoadingProvider>
   );
 }
 

@@ -32,6 +32,9 @@ export const Navbar = ({ handleLogout }) => {
         <Link to="/create-event">Create Event</Link>
       </li>
       <li>
+        <Link to="/events">All Events</Link>
+      </li>
+      <li>
         <Link to="/chatbot" className="text-primary font-semibold">
           🤖 AI Assistant
         </Link>

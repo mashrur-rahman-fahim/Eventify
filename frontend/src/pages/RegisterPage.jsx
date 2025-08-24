@@ -2,18 +2,22 @@ import React, { useContext, useEffect, useState } from "react";
 import api from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
+import { useLoading } from "../context/LoadingContext";
+import { LoadingButton } from "../components/loading";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import { appToasts } from "../utils/toast";
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
   const { isVerified, isLoading, checkLogin } = useContext(VerifyContext);
+  const { withLoading } = useLoading();
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     checkLogin();
@@ -160,26 +164,29 @@ export const RegisterPage = () => {
     }
 
     setValidationErrors({});
+    setIsSubmitting(true);
 
     try {
-      await api.post("/api/register", {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        role: formData.role,
-        password: formData.password,
-      });
+      await withLoading('register', 'Creating your account...', async () => {
+        await api.post("/api/register", {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          role: formData.role,
+          password: formData.password,
+        });
 
-      appToasts.registrationSuccess();
+        appToasts.registrationSuccess();
 
-      // Clear form
-      setFormData({
-        name: "",
-        email: "",
-        role: 0,
-        password: "",
-        confirmPassword: "",
+        // Clear form
+        setFormData({
+          name: "",
+          email: "",
+          role: 0,
+          password: "",
+          confirmPassword: "",
+        });
+        setPasswordStrength({ score: 0, feedback: "" });
       });
-      setPasswordStrength({ score: 0, feedback: "" });
     } catch (err) {
       if (err.response && err.response.data.message) {
         appToasts.error(err.response.data.message, "Registration Failed");
@@ -190,6 +197,8 @@ export const RegisterPage = () => {
         );
       }
       console.error(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -708,7 +717,12 @@ export const RegisterPage = () => {
 
               {/* Submit Button */}
               <div className="form-control">
-                <button type="submit" className="btn btn-primary w-full h-12">
+                <LoadingButton 
+                  type="submit" 
+                  className="btn-primary w-full h-12"
+                  loading={isSubmitting}
+                  loadingText="Creating Account..."
+                >
                   <svg
                     className="w-5 h-5 mr-2"
                     fill="none"
@@ -723,7 +737,7 @@ export const RegisterPage = () => {
                     />
                   </svg>
                   Create Account
-                </button>
+                </LoadingButton>
               </div>
             </form>
 
