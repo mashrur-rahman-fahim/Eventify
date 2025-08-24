@@ -57,15 +57,6 @@ const ChatbotWidget = () => {
         >
           <span className="text-2xl">🤖</span>
         </button>
-
-        {/* Notification badge */}
-        {messages.length === 0 && (
-          <div className="absolute -top-2 -right-2">
-            <div className="badge badge-secondary badge-sm animate-ping">
-              New
-            </div>
-          </div>
-        )}
       </div>
     );
   }

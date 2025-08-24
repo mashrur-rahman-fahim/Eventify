@@ -287,16 +287,6 @@ export const LandingPage = () => {
             />
           ))}
         </div>
-
-        {/* Floating Action Button */}
-        <div className="absolute bottom-20 right-8">
-          <Link
-            to="/chatbot"
-            className="btn btn-circle btn-primary btn-lg shadow-2xl hover:scale-110 transition-transform animate-bounce"
-          >
-            🤖
-          </Link>
-        </div>
       </section>
 
       {/* Statistics Section */}
