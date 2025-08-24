@@ -43,11 +43,13 @@ export const LoginPage = () => {
       if (!response.data.success) {
         await api.post("/api/resendVerificationEmail", formData);
       }
-      await api.post("/api/login", formData);
-
-      navigate("/dashboard");
-
-      console.log(response);
+      const loginResponse = await api.post("/api/login", formData);
+      if (loginResponse.status === 200) {
+        
+        navigate("/dashboard");
+      } else {
+        setError(loginResponse.data.message);
+      }
     } catch (error) {
       console.log(error);
     }

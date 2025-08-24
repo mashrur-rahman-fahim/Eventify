@@ -23,11 +23,12 @@ export const DashboardPage = () => {
 
   const handleLogout = async () => {
     try {
-      await api.get("/api/logout");
+     const res= await api.get("/api/logout");
+     if(res.status===200){
+      navigate("/login");
+     }
     } catch (error) {
       console.error("Logout failed", error);
-    } finally {
-      navigate("/login");
     }
   };
 

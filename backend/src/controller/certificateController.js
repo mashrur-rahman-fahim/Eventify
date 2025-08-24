@@ -19,8 +19,11 @@ class CertificateController {
         return res.status(404).json({ error: "Registration not found" });
       }
 
-      // Only allow if user is the participant
-      if (registration.userId.toString() !== userId.toString()) {
+      // Allow if user is the participant OR if user is an admin
+      const role = await Role.findById(req.user.role);
+      const isAdmin = role?.permissions?.canManageAttendees;
+
+      if (registration.userId.toString() !== userId.toString() && !isAdmin) {
         return res
           .status(403)
           .json({ error: "Unauthorized to generate certificate" });
@@ -91,11 +94,16 @@ class CertificateController {
         certUserType: typeof certificateUserId,
       });
 
-      if (certificateUserId.toString() !== userId.toString()) {
+      // Allow download if user is the certificate owner OR if user is an admin
+      const role = await Role.findById(req.user.role);
+      const isAdmin = role?.permissions?.canManageAttendees;
+
+      if (certificateUserId.toString() !== userId.toString() && !isAdmin) {
         console.log("Authorization failed for certificate download:", {
           requestUserId: userId.toString(),
           certificateUserId: certificateUserId.toString(),
           certificateId: certificateId,
+          isAdmin: isAdmin,
         });
         return res
           .status(403)
@@ -144,11 +152,16 @@ class CertificateController {
       // Handle both populated and non-populated userId field
       const certificateUserId = certificate.userId._id || certificate.userId;
 
-      if (certificateUserId.toString() !== userId.toString()) {
+      // Allow view if user is the certificate owner OR if user is an admin
+      const role = await Role.findById(req.user.role);
+      const isAdmin = role?.permissions?.canManageAttendees;
+
+      if (certificateUserId.toString() !== userId.toString() && !isAdmin) {
         console.log("Authorization failed for certificate view:", {
           requestUserId: userId.toString(),
           certificateUserId: certificateUserId.toString(),
           certificateId: certificateId,
+          isAdmin: isAdmin,
         });
         return res
           .status(403)

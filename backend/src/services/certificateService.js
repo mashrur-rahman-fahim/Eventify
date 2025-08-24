@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -93,218 +93,210 @@ class CertificateService {
         day: "numeric",
       });
 
-      // Simple, clean HTML template
-      const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Certificate</title>
-          <style>
-            @page {
-              size: A4 landscape;
-              margin: 0;
-            }
-            
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            
-            body {
-              width: 297mm;
-              height: 210mm;
-              font-family: 'Times New Roman', serif;
-              background: #f8f9fa;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              overflow: hidden;
-            }
-            
-            .certificate {
-              width: 280mm;
-              height: 190mm;
-              background: white;
-              border: 8px solid #2c3e50;
-              border-radius: 10px;
-              padding: 30px;
-              text-align: center;
-              box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-              position: relative;
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-            }
-            
-            .border-pattern {
-              position: absolute;
-              top: 15px;
-              left: 15px;
-              right: 15px;
-              bottom: 15px;
-              border: 2px solid #3498db;
-              border-radius: 8px;
-            }
-            
-            .header {
-              margin-bottom: 20px;
-            }
-            
-            .university {
-              font-size: 24px;
-              font-weight: bold;
-              color: #2c3e50;
-              margin-bottom: 5px;
-            }
-            
-            .motto {
-              font-size: 12px;
-              color: #7f8c8d;
-              font-style: italic;
-            }
-            
-            .title {
-              font-size: 42px;
-              font-weight: bold;
-              color: #2c3e50;
-              margin: 20px 0;
-              text-transform: uppercase;
-            }
-            
-            .subtitle {
-              font-size: 16px;
-              color: #7f8c8d;
-              margin-bottom: 15px;
-            }
-            
-            .name {
-              font-size: 32px;
-              font-weight: bold;
-              color: #2c3e50;
-              margin: 15px 0;
-              padding: 12px;
-              background: #ecf0f1;
-              border-radius: 6px;
-            }
-            
-            .event-info {
-              font-size: 18px;
-              color: #2c3e50;
-              margin: 12px 0;
-            }
-            
-            .details {
-              font-size: 14px;
-              color: #7f8c8d;
-              margin: 8px 0;
-            }
-            
-            .signatures {
-              display: flex;
-              justify-content: space-around;
-              margin-top: 25px;
-              padding: 0 80px;
-            }
-            
-            .signature {
-              text-align: center;
-            }
-            
-            .signature-line {
-              width: 120px;
-              height: 2px;
-              background: #2c3e50;
-              margin: 0 auto 8px;
-            }
-            
-            .signature-label {
-              font-size: 10px;
-              color: #2c3e50;
-              font-weight: bold;
-            }
-            
-            .footer {
-              position: absolute;
-              bottom: 15px;
-              left: 30px;
-              right: 30px;
-              display: flex;
-              justify-content: space-between;
-              font-size: 9px;
-              color: #95a5a6;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="certificate">
-            <div class="border-pattern"></div>
-            
-            <div class="header">
-              <div class="university">Ahsanullah University of Science and Technology</div>
-              <div class="motto">Excellence in Education and Innovation</div>
-            </div>
-            
-            <div class="title">Certificate of Participation</div>
-            
-            <div class="subtitle">This is to certify that</div>
-            
-            <div class="name">${certificateData.participantName}</div>
-            
-            <div class="subtitle">has successfully participated in</div>
-            
-            <div class="event-info">${certificateData.eventTitle}</div>
-            
-            <div class="details">held on ${eventDate} at ${certificateData.eventLocation}</div>
-            
-            <div class="details">Organized by ${certificateData.clubName}</div>
-            
-            <div class="signatures">
-              <div class="signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">Event Organizer</div>
-              </div>
-              <div class="signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">Director</div>
-              </div>
-            </div>
-            
-            <div class="footer">
-              <div>Certificate ID: ${certificateData.registrationId}</div>
-              <div>Generated on: ${generatedDate}</div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
-      // Launch browser and generate PDF
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      // Create PDF document
+      const doc = new PDFDocument({
+        size: "A4",
+        layout: "landscape",
+        margins: {
+          top: 50,
+          bottom: 50,
+          left: 50,
+          right: 50,
+        },
       });
 
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+      // Pipe PDF to file
+      const writeStream = fs.createWriteStream(filePath);
+      doc.pipe(writeStream);
 
-      // Generate PDF with strict page control
-      const pdfBuffer = await page.pdf({
-        format: "A4",
-        landscape: true,
-        printBackground: true,
-        margin: { top: 0, right: 0, bottom: 0, left: 0 },
-        preferCSSPageSize: true,
-        displayHeaderFooter: false,
+      // Set up fonts and colors
+      const primaryColor = "#2c3e50";
+      const secondaryColor = "#3498db";
+      const accentColor = "#7f8c8d";
+
+      // Draw border
+      doc
+        .rect(20, 20, doc.page.width - 40, doc.page.height - 40)
+        .lineWidth(3)
+        .stroke(primaryColor);
+
+      // Inner border
+      doc
+        .rect(35, 35, doc.page.width - 70, doc.page.height - 70)
+        .lineWidth(1)
+        .stroke(secondaryColor);
+
+      // Header - University name
+      doc
+        .fontSize(24)
+        .font("Helvetica-Bold")
+        .fill(primaryColor)
+        .text(
+          "Ahsanullah University of Science and Technology",
+          doc.page.width / 2,
+          80,
+          {
+            align: "center",
+          }
+        );
+
+      // Motto
+      doc
+        .fontSize(12)
+        .font("Helvetica-Oblique")
+        .fill(accentColor)
+        .text(
+          "Excellence in Education and Innovation",
+          doc.page.width / 2,
+          110,
+          {
+            align: "center",
+          }
+        );
+
+      // Main title
+      doc
+        .fontSize(36)
+        .font("Helvetica-Bold")
+        .fill(primaryColor)
+        .text("CERTIFICATE OF PARTICIPATION", doc.page.width / 2, 160, {
+          align: "center",
+        });
+
+      // Subtitle
+      doc
+        .fontSize(16)
+        .font("Helvetica")
+        .fill(accentColor)
+        .text("This is to certify that", doc.page.width / 2, 220, {
+          align: "center",
+        });
+
+      // Participant name
+      doc
+        .fontSize(28)
+        .font("Helvetica-Bold")
+        .fill(primaryColor)
+        .text(certificateData.participantName, doc.page.width / 2, 250, {
+          align: "center",
+        });
+
+      // Another subtitle
+      doc
+        .fontSize(16)
+        .font("Helvetica")
+        .fill(accentColor)
+        .text("has successfully participated in", doc.page.width / 2, 300, {
+          align: "center",
+        });
+
+      // Event title
+      doc
+        .fontSize(20)
+        .font("Helvetica-Bold")
+        .fill(primaryColor)
+        .text(certificateData.eventTitle, doc.page.width / 2, 330, {
+          align: "center",
+        });
+
+      // Event details
+      doc
+        .fontSize(14)
+        .font("Helvetica")
+        .fill(accentColor)
+        .text(
+          `held on ${eventDate} at ${certificateData.eventLocation}`,
+          doc.page.width / 2,
+          360,
+          {
+            align: "center",
+          }
+        );
+
+      doc
+        .fontSize(14)
+        .font("Helvetica")
+        .fill(accentColor)
+        .text(
+          `Organized by ${certificateData.clubName}`,
+          doc.page.width / 2,
+          380,
+          {
+            align: "center",
+          }
+        );
+
+      // Signatures
+      const signatureY = 450;
+      const leftSignatureX = 150;
+      const rightSignatureX = doc.page.width - 150;
+
+      // Left signature
+      doc
+        .moveTo(leftSignatureX - 60, signatureY)
+        .lineTo(leftSignatureX + 60, signatureY)
+        .lineWidth(2)
+        .stroke(primaryColor);
+
+      doc
+        .fontSize(12)
+        .font("Helvetica-Bold")
+        .fill(primaryColor)
+        .text("Event Organizer", leftSignatureX, signatureY + 10, {
+          align: "center",
+        });
+
+      // Right signature
+      doc
+        .moveTo(rightSignatureX - 60, signatureY)
+        .lineTo(rightSignatureX + 60, signatureY)
+        .lineWidth(2)
+        .stroke(primaryColor);
+
+      doc
+        .fontSize(12)
+        .font("Helvetica-Bold")
+        .fill(primaryColor)
+        .text("Director", rightSignatureX, signatureY + 10, {
+          align: "center",
+        });
+
+      // Footer
+      doc
+        .fontSize(10)
+        .font("Helvetica")
+        .fill(accentColor)
+        .text(
+          `Certificate ID: ${certificateData.registrationId}`,
+          70,
+          doc.page.height - 80
+        );
+
+      doc
+        .fontSize(10)
+        .font("Helvetica")
+        .fill(accentColor)
+        .text(
+          `Generated on: ${generatedDate}`,
+          doc.page.width - 200,
+          doc.page.height - 80,
+          {
+            align: "right",
+          }
+        );
+
+      // Finalize PDF
+      doc.end();
+
+      // Return a promise that resolves when the file is written
+      return new Promise((resolve, reject) => {
+        writeStream.on("finish", () => {
+          resolve(fileName);
+        });
+        writeStream.on("error", (error) => {
+          reject(new Error(`PDF generation failed: ${error.message}`));
+        });
       });
-
-      await browser.close();
-
-      // Save PDF to file
-      fs.writeFileSync(filePath, pdfBuffer);
-
-      return fileName;
     } catch (error) {
       throw new Error(`PDF generation failed: ${error.message}`);
     }

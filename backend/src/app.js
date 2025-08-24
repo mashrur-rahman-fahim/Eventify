@@ -56,9 +56,7 @@ app.use(
   })
 );
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
+
 app.get("/test/email", async (req, res) => {
   try {
     await sendVerificationEmail("mashrur950@gmail.com", "1234567890");
