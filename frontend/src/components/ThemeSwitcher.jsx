@@ -102,7 +102,7 @@ const ThemeSwitcher = () => {
       </div>
       <ul
         tabIndex={0}
-        className={`dropdown-content menu p-2 shadow bg-base-200 rounded-box w-64 max-h-96 overflow-y-auto ${
+        className={`dropdown-content menu p-2 shadow bg-base-200 rounded-box w-64 max-h-96 overflow-y-auto z-[9999] ${
           isOpen ? "block" : "hidden"
         }`}
       >
