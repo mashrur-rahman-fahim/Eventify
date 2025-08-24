@@ -20,8 +20,14 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
   image: {
-    type: String, 
-    default: null,
+    url: {
+      type: String, // URL to uploaded image
+      default: null,
+    },
+    public_id: {
+      type: String, // Cloudinary public_id for deletion
+      default: null,
+    },
   },
   role: {
     type: mongoose.Schema.Types.ObjectId,

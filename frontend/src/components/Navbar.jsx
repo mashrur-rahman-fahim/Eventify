@@ -2,11 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import ThemeSwitcher from "./ThemeSwitcher";
 
 export const Navbar = ({ handleLogout }) => {
   const { isAdmin, checkLogin, logout } = useContext(VerifyContext);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   useEffect(() => {
     checkLogin();
   }, []);
@@ -28,7 +30,9 @@ export const Navbar = ({ handleLogout }) => {
         <Link to="/create-event">Create Event</Link>
       </li>
       <li>
-        <Link to="/certificates">Certificates</Link>
+        <Link to="/chatbot" className="text-primary font-semibold">
+          🤖 AI Assistant
+        </Link>
       </li>
     </>
   ) : (
@@ -42,6 +46,11 @@ export const Navbar = ({ handleLogout }) => {
       </li>
       <li>
         <Link to="/certificates">My Certificates</Link>
+      </li>
+      <li>
+        <Link to="/chatbot" className="text-primary font-semibold">
+          🤖 AI Assistant
+        </Link>
       </li>
     </>
   );
@@ -117,6 +126,9 @@ export const Navbar = ({ handleLogout }) => {
               />
             </div>
           </Link>
+
+          {/* Theme Switcher */}
+          <ThemeSwitcher />
 
           {/* Logout */}
           <button

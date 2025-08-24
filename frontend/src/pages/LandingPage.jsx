@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
+import ThemeSwitcher from "../components/ThemeSwitcher";
 
 export const LandingPage = () => {
   const { isVerified, checkLogin, isLoading } = useContext(VerifyContext);
@@ -133,7 +134,7 @@ export const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-base-100" data-theme="dim">
+    <div className="min-h-screen bg-base-100">
       {/* Navigation */}
       <div className="navbar bg-base-100/90 shadow-lg sticky top-0 z-50 backdrop-blur-md">
         <div className="navbar-start">
@@ -167,6 +168,11 @@ export const LandingPage = () => {
               <li>
                 <a href="#about">About</a>
               </li>
+              <li>
+                <Link to="/chatbot" className="text-primary font-semibold">
+                  🤖 AI Assistant
+                </Link>
+              </li>
             </ul>
           </div>
           <div className="btn btn-ghost text-2xl font-bold text-primary">
@@ -193,9 +199,18 @@ export const LandingPage = () => {
                 About
               </a>
             </li>
+            <li>
+              <Link
+                to="/chatbot"
+                className="hover:text-primary transition-colors text-primary font-semibold"
+              >
+                🤖 AI Assistant
+              </Link>
+            </li>
           </ul>
         </div>
         <div className="navbar-end gap-2">
+          <ThemeSwitcher />
           <Link to="/login" className="btn btn-ghost">
             Login
           </Link>
@@ -240,6 +255,12 @@ export const LandingPage = () => {
                         className="btn btn-outline btn-lg text-white border-white hover:scale-105 transition-transform"
                       >
                         Browse Events
+                      </Link>
+                      <Link
+                        to="/chatbot"
+                        className="btn btn-secondary btn-lg hover:scale-105 transition-transform"
+                      >
+                        🤖 AI Assistant
                       </Link>
                     </div>
                   </div>
@@ -434,6 +455,157 @@ export const LandingPage = () => {
               <p className="text-base-content/70">
                 Register for events and earn certificates upon completion
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Assistant Section */}
+      <section className="py-20 bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold mb-4 text-base-content">
+              Meet Your AI Assistant 🤖
+            </h2>
+            <p className="text-xl text-base-content/70 max-w-3xl mx-auto">
+              Get instant help and answers to all your questions about Eventify
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Content Column */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-3xl">
+                  🤖
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-primary">
+                    24/7 Support
+                  </h3>
+                  <p className="text-base-content/70">
+                    Always here to help you
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-success/20 rounded-full flex items-center justify-center text-success text-sm font-bold mt-1">
+                    ✓
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-base-content">
+                      Event Discovery
+                    </h4>
+                    <p className="text-base-content/70">
+                      Ask about upcoming events, categories, and recommendations
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-success/20 rounded-full flex items-center justify-center text-success text-sm font-bold mt-1">
+                    ✓
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-base-content">
+                      Registration Help
+                    </h4>
+                    <p className="text-base-content/70">
+                      Get guidance on how to register for events and manage your
+                      account
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-success/20 rounded-full flex items-center justify-center text-success text-sm font-bold mt-1">
+                    ✓
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-base-content">
+                      Certificate Information
+                    </h4>
+                    <p className="text-base-content/70">
+                      Learn about digital certificates and how to download them
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-success/20 rounded-full flex items-center justify-center text-success text-sm font-bold mt-1">
+                    ✓
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-base-content">
+                      General Support
+                    </h4>
+                    <p className="text-base-content/70">
+                      Any questions about the platform? Just ask!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                <Link
+                  to="/chatbot"
+                  className="btn btn-primary btn-lg hover:scale-105 transition-transform"
+                >
+                  🤖 Try AI Assistant
+                </Link>
+                <Link
+                  to="/register"
+                  className="btn btn-outline btn-lg hover:scale-105 transition-transform"
+                >
+                  Get Started
+                </Link>
+              </div>
+            </div>
+
+            {/* Visual Column */}
+            <div className="relative">
+              <div className="bg-base-100 rounded-2xl shadow-2xl p-8 border border-primary/20">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white">
+                      🤖
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">AI Assistant</h4>
+                      <p className="text-sm text-base-content/70">Online</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="chat chat-start">
+                      <div className="chat-bubble chat-bubble-primary">
+                        Hi! I'm your AI assistant. How can I help you today?
+                      </div>
+                    </div>
+
+                    <div className="chat chat-end">
+                      <div className="chat-bubble">
+                        How do I register for an event?
+                      </div>
+                    </div>
+
+                    <div className="chat chat-start">
+                      <div className="chat-bubble chat-bubble-primary">
+                        To register for an event, simply browse the events page,
+                        click on an event you're interested in, and use the
+                        "Register" button. You'll receive a confirmation email
+                        once registered!
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating elements */}
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-primary/20 rounded-full animate-pulse"></div>
+              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-secondary/20 rounded-full animate-pulse delay-1000"></div>
             </div>
           </div>
         </div>
@@ -634,7 +806,8 @@ export const LandingPage = () => {
           </div>
 
           <div className="border-t border-base-content/20 mt-8 pt-8 text-center text-base-content/60">
-            <p>&copy; 2025 Eventify. Made with ❤️ for university students.</p>
+            <p>&copy; 2025 Eventify. Built with passion for academic excellence
+            .</p>
           </div>
         </div>
       </footer>

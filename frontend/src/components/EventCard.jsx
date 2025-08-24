@@ -18,7 +18,10 @@ export const EventCard = ({ event }) => {
       <figure className="h-56">
         {/* Use the event image, or a unique placeholder if none exists */}
         <img
-          src={event.image || `https://picsum.photos/seed/${event._id}/600/400`}
+          src={
+            event.image?.url ||
+            `https://picsum.photos/seed/${event._id}/600/400`
+          }
           alt={`Poster for ${event.title}`}
           className="h-full w-full object-cover"
         />

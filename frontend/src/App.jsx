@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DashboardPage } from "./pages/DashboardPage";
 import { TestPage } from "./pages/TestPage";
@@ -26,6 +26,17 @@ import EventManagementPage from "./pages/EventManagementPage";
 import Profile from "./pages/Profile";
 
 function App() {
+  // Set default theme to "dim" on app initialization
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (!savedTheme) {
+      localStorage.setItem("theme", "dim");
+      document.documentElement.setAttribute("data-theme", "dim");
+    } else {
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    }
+  }, []);
+
   return (
     <ChatbotProvider>
       <BrowserRouter>

@@ -1,9 +1,13 @@
 import User from "../model/user.model.js";
-
 import { generateToken } from "../services/tokenService.js";
 import { sendVerificationEmail } from "../services/emailService.js";
 import mongoose from "mongoose";
 import Role from "../model/roles.model.js";
+import {
+  uploadImage,
+  deleteImage,
+  updateImage,
+} from "../services/cloudinaryService.js";
 export const registerUser = async (req, res) => {
   const session = await mongoose.startSession();
   try {
@@ -89,6 +93,46 @@ export const getUserProfile = async (req, res) => {
 
     return res.status(200).json({
       user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// Update user profile
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const updateData = { name, email };
+
+    // Handle image upload if provided
+    if (req.file) {
+      try {
+        const user = await User.findById(req.user._id);
+        const imageData = await updateImage(
+          req.file,
+          user.image?.public_id,
+          "eventify/profiles"
+        );
+        updateData.image = imageData;
+      } catch (error) {
+        return res.status(400).json({ message: "Failed to upload image" });
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
+      new: true,
+      runValidators: true,
+    })
+      .populate("role", "name level")
+      .select("-password");
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser,
     });
   } catch (error) {
     console.log(error);

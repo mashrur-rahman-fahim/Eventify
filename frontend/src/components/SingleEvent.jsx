@@ -155,7 +155,8 @@ export const SingleEvent = () => {
         <div className="relative h-96 overflow-hidden">
           <img
             src={
-              event.image || `https://picsum.photos/seed/${event._id}/1200/600`
+              event.image?.url ||
+              `https://picsum.photos/seed/${event._id}/1200/600`
             }
             alt={`${event.title} poster`}
             className="w-full h-full object-cover"

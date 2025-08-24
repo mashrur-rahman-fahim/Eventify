@@ -31,6 +31,7 @@ export const CreateEventPage = () => {
 
   // State for submission status and errors
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -95,8 +96,23 @@ export const CreateEventPage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setError("Please select a valid image file (JPG, PNG, GIF)");
+        e.target.value = ""; // Clear the input
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size must be less than 5MB");
+        e.target.value = ""; // Clear the input
+        return;
+      }
+
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+      setError(""); // Clear any previous errors
     } else {
       setImageFile(null);
       setImagePreview("");
@@ -134,6 +150,7 @@ export const CreateEventPage = () => {
     }
 
     setLoading(true);
+    setUploading(true);
 
     const dataToSubmit = new FormData();
     for (const key in formData) {
@@ -141,21 +158,40 @@ export const CreateEventPage = () => {
     }
     if (imageFile) {
       dataToSubmit.append("image", imageFile);
+      console.log(
+        "Image file added to FormData:",
+        imageFile.name,
+        imageFile.size
+      );
+    }
+
+    // Debug: Log FormData contents
+    console.log("FormData contents:");
+    for (let [key, value] of dataToSubmit.entries()) {
+      console.log(key, value);
     }
 
     try {
       // Use the selectedClubId to build the dynamic URL
-      await api.post(`/api/event/create/${selectedClubId}`, dataToSubmit);
+      await api.post(`/api/event/create/${selectedClubId}`, dataToSubmit, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       console.log(dataToSubmit);
       navigate("/dashboard");
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to create event. Please try again."
-      );
-      console.error(err);
+      console.error("Event creation error:", err);
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Failed to create event. Please try again.");
+      }
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -372,22 +408,69 @@ export const CreateEventPage = () => {
                 <label className="label">
                   <span className="label-text">Event Poster (Optional)</span>
                 </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    name="image"
-                    onChange={handleImageChange}
-                    className="file-input file-input-bordered w-full max-w-xs"
-                    accept="image/*"
-                  />
+                <div className="flex flex-col md:flex-row items-start gap-4">
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      name="image"
+                      onChange={handleImageChange}
+                      className="file-input file-input-bordered w-full"
+                      accept="image/*"
+                    />
+                    <label className="label">
+                      <span className="label-text-alt text-base-content/70">
+                        Supported formats: JPG, PNG, GIF. Max size: 5MB
+                      </span>
+                    </label>
+                  </div>
                   {imagePreview && (
-                    <div className="avatar">
-                      <div className="w-24 rounded">
-                        <img src={imagePreview} alt="Image Preview" />
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="avatar">
+                        <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-base-300">
+                          <img
+                            src={imagePreview}
+                            alt="Image Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview("");
+                          // Clear the file input
+                          const fileInput = document.querySelector(
+                            'input[name="image"]'
+                          );
+                          if (fileInput) fileInput.value = "";
+                        }}
+                        className="btn btn-sm btn-outline btn-error"
+                      >
+                        Remove Image
+                      </button>
                     </div>
                   )}
                 </div>
+                {imageFile && (
+                  <div className="mt-2 p-2 bg-success/10 border border-success/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-success text-sm">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Image selected: {imageFile.name} (
+                      {(imageFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Global Error Message */}
@@ -415,6 +498,9 @@ export const CreateEventPage = () => {
                     <span className="loading loading-spinner"></span>
                   ) : (
                     "Create Event"
+                  )}
+                  {uploading && imageFile && (
+                    <span className="ml-2 text-sm">(Uploading image...)</span>
                   )}
                 </button>
               </div>

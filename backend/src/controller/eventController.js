@@ -3,6 +3,11 @@ import Event from "../model/event.model.js";
 import Club from "../model/club.model.js";
 import Registration from "../model/registration.model.js";
 import Role from "../model/roles.model.js";
+import {
+  uploadImage,
+  deleteImage,
+  updateImage,
+} from "../services/cloudinaryService.js";
 
 export const createEvent = async (req, res) => {
   try {
@@ -13,7 +18,6 @@ export const createEvent = async (req, res) => {
       time,
       location,
       category,
-      image,
       maxAttendees,
       registrationDeadline,
     } = req.body;
@@ -47,6 +51,66 @@ export const createEvent = async (req, res) => {
       });
     }
 
+    // Check for schedule collision - prevent booking same location at same time
+    const eventDate = new Date(date);
+    const eventTime = time;
+
+    // Find events at the same location on the same date
+    const conflictingEvents = await Event.find({
+      location: location,
+      date: {
+        $gte: new Date(
+          eventDate.getFullYear(),
+          eventDate.getMonth(),
+          eventDate.getDate()
+        ),
+        $lt: new Date(
+          eventDate.getFullYear(),
+          eventDate.getMonth(),
+          eventDate.getDate() + 1
+        ),
+      },
+      isActive: true,
+      _id: { $ne: req.body.eventId }, // Exclude current event if editing
+    });
+
+    // Check for time conflicts (assuming events last 2 hours by default)
+    const hasConflict = conflictingEvents.some((existingEvent) => {
+      const existingTime = existingEvent.time;
+      const existingHour = parseInt(existingTime.split(":")[0]);
+      const newHour = parseInt(eventTime.split(":")[0]);
+
+      // Check if times overlap (events are assumed to last 2 hours)
+      return Math.abs(existingHour - newHour) < 2;
+    });
+
+    if (hasConflict) {
+      return res.status(400).json({
+        message:
+          "This location is already booked for the selected time. Please choose a different time or location.",
+      });
+    }
+
+    // Handle image upload if provided
+    let imageData = null;
+    if (req.file) {
+      console.log(
+        "File received:",
+        req.file.originalname,
+        req.file.size,
+        req.file.mimetype
+      );
+      try {
+        imageData = await uploadImage(req.file, "eventify/events");
+        console.log("Image uploaded successfully:", imageData);
+      } catch (error) {
+        console.error("Image upload error:", error);
+        return res.status(400).json({ message: "Failed to upload image" });
+      }
+    } else {
+      console.log("No file received in request");
+    }
+
     const event = new Event({
       title,
       description,
@@ -54,7 +118,7 @@ export const createEvent = async (req, res) => {
       time,
       location,
       category,
-      image,
+      image: imageData,
       maxAttendees,
       registrationDeadline,
       clubId,
@@ -179,6 +243,20 @@ export const updateEvent = async (req, res) => {
       });
     }
 
+    // Handle image upload if provided
+    if (req.file) {
+      try {
+        const imageData = await updateImage(
+          req.file,
+          event.image?.public_id,
+          "eventify/events"
+        );
+        updateData.image = imageData;
+      } catch (error) {
+        return res.status(400).json({ message: "Failed to upload image" });
+      }
+    }
+
     const updatedEvent = await Event.findByIdAndUpdate(eventId, updateData, {
       new: true,
       runValidators: true,
@@ -220,6 +298,15 @@ export const deleteEvent = async (req, res) => {
       return res.status(403).json({
         message: "Only the event creator can delete the event",
       });
+    }
+
+    // Delete image from Cloudinary if exists
+    if (event.image?.public_id) {
+      try {
+        await deleteImage(event.image.public_id);
+      } catch (error) {
+        console.error("Failed to delete image from Cloudinary:", error);
+      }
     }
 
     await Registration.deleteMany({ eventId });
@@ -483,11 +570,7 @@ export const getUserEvents = async (req, res) => {
     } = req.query;
 
     const query = {
-      $or: [
-        { userId: userId },
-        { admins: userId },
-        { attendees: userId },
-      ],
+      $or: [{ userId: userId }, { admins: userId }, { attendees: userId }],
     };
 
     if (status === "active") {

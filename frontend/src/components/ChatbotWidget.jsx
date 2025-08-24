@@ -49,214 +49,255 @@ const ChatbotWidget = () => {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={toggleChat}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 transform hover:scale-105"
-          aria-label="Open chat"
+          className="btn btn-primary btn-circle btn-lg shadow-2xl hover:scale-110 transition-all duration-300 animate-pulse"
+          aria-label="Open AI Assistant"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
+          <span className="text-2xl">🤖</span>
         </button>
+
+        {/* Notification badge */}
+        {messages.length === 0 && (
+          <div className="absolute -top-2 -right-2">
+            <div className="badge badge-secondary badge-sm animate-ping">
+              New
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {/* Chat Header */}
-      <div className="bg-blue-600 text-white rounded-t-lg p-4 shadow-lg w-80">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold">Eventify Assistant</h3>
-              <p className="text-xs opacity-90">
-                Ask me anything about events!
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => {
-                console.log("Clear conversation button clicked");
-                clearConversation();
-              }}
-              className="text-white hover:text-gray-200 transition-colors"
-              title="Clear conversation"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={toggleChat}
-              className="text-white hover:text-gray-200 transition-colors"
-              title="Close chat"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Chat Messages */}
-      <div className="bg-white border-l border-r border-gray-200 h-96 overflow-y-auto">
-        <div className="p-4 space-y-4">
-          {messages.length === 0 && (
-            <div className="text-center text-gray-500">
-              <p className="mb-4">👋 Hi! I'm here to help you with Eventify.</p>
-              <p className="text-sm">Try asking me about:</p>
-            </div>
-          )}
-
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  message.sender === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                <p className="text-sm">{message.content}</p>
-                <p
-                  className={`text-xs mt-1 ${
-                    message.sender === "user"
-                      ? "text-blue-100"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {formatTime(message.timestamp)}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Chat Container */}
+      <div className="card w-96 bg-base-100 shadow-2xl border border-base-300">
+        {/* Chat Header */}
+        <div className="card-body p-0">
+          <div className="bg-gradient-to-r from-primary to-primary-focus text-primary-content p-4 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="avatar placeholder">
+                  <div className="bg-primary-content text-primary rounded-full w-10">
+                    <span className="text-lg">🤖</span>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">Eventify AI</h3>
+                  <p className="text-primary-content/80 text-sm">
+                    {isLoading ? "Typing..." : "Online"}
+                  </p>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={clearConversation}
+                  className="btn btn-ghost btn-sm btn-circle text-primary-content hover:bg-primary-content/20"
+                  title="Clear conversation"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={toggleChat}
+                  className="btn btn-ghost btn-sm btn-circle text-primary-content hover:bg-primary-content/20"
+                  title="Close chat"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="h-80 overflow-y-auto p-4 bg-base-50">
+            {messages.length === 0 && (
+              <div className="text-center py-8">
+                <div className="avatar placeholder mb-4">
+                  <div className="bg-primary/20 text-primary rounded-full w-16 h-16">
+                    <span className="text-2xl">🤖</span>
+                  </div>
+                </div>
+                <h4 className="font-bold text-base-content mb-2">
+                  Hi! I'm your AI Assistant
+                </h4>
+                <p className="text-base-content/70 text-sm mb-4">
+                  Ask me anything about Eventify!
+                </p>
+
+                {/* Quick Suggestions */}
+                {suggestions.length > 0 && (
+                  <div className="space-y-2">
+                    {suggestions.slice(0, 3).map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="btn btn-outline btn-primary btn-sm w-full justify-start text-left h-auto p-3 text-xs"
+                      >
+                        <span className="text-sm mr-2">💡</span>
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`chat ${
+                  message.sender === "user" ? "chat-end" : "chat-start"
+                } mb-3`}
+              >
+                {message.sender === "assistant" && (
+                  <div className="chat-image avatar">
+                    <div className="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center">
+                      <span className="text-xs">🤖</span>
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={`chat-bubble ${
+                    message.sender === "user"
+                      ? "chat-bubble-primary"
+                      : "chat-bubble-secondary"
+                  } max-w-xs text-sm`}
+                >
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                </div>
+                <div className="chat-footer opacity-50 text-xs">
+                  {formatTime(message.timestamp)}
+                </div>
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="chat chat-start mb-3">
+                <div className="chat-image avatar">
+                  <div className="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center">
+                    <span className="text-xs">🤖</span>
+                  </div>
+                </div>
+                <div className="chat-bubble chat-bubble-secondary">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-base-content/60 rounded-full animate-bounce"></div>
+                    <div
+                      className="w-2 h-2 bg-base-content/60 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.1s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-base-content/60 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Quick Actions */}
+          {messages.length > 0 && (
+            <div className="bg-base-200 p-3 border-t border-base-300">
+              <div className="flex flex-wrap gap-1">
+                <button
+                  onClick={() =>
+                    handleSuggestionClick("How do I register for an event?")
+                  }
+                  className="btn btn-xs btn-outline"
+                  disabled={isLoading}
+                >
+                  📝 Help
+                </button>
+                <button
+                  onClick={() =>
+                    handleSuggestionClick("Tell me about upcoming events")
+                  }
+                  className="btn btn-xs btn-outline"
+                  disabled={isLoading}
+                >
+                  📅 Events
+                </button>
+                <button
+                  onClick={() =>
+                    handleSuggestionClick("How do I get my certificate?")
+                  }
+                  className="btn btn-xs btn-outline"
+                  disabled={isLoading}
+                >
+                  🏆 Cert
+                </button>
+              </div>
             </div>
           )}
 
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      {/* Suggestions */}
-      {messages.length === 0 && suggestions.length > 0 && (
-        <div className="bg-gray-50 border-l border-r border-gray-200 p-3">
-          <p className="text-xs text-gray-600 mb-2">Quick questions:</p>
-          <div className="space-y-1">
-            {suggestions.slice(0, 3).map((suggestion, index) => (
+          {/* Input Form */}
+          <div className="p-4 border-t border-base-300">
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <div className="form-control flex-1">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  className="input input-bordered input-sm w-full"
+                  disabled={isLoading}
+                />
+              </div>
               <button
-                key={index}
-                onClick={() => handleSuggestionClick(suggestion)}
-                className="block w-full text-left text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                type="submit"
+                disabled={!inputMessage.trim() || isLoading}
+                className="btn btn-primary btn-sm"
               >
-                {suggestion}
+                {isLoading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    />
+                  </svg>
+                )}
               </button>
-            ))}
+            </form>
           </div>
         </div>
-      )}
-
-      {/* Input Form */}
-      <div className="bg-white border border-gray-200 rounded-b-lg p-3">
-        <form onSubmit={handleSubmit} className="flex space-x-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={!inputMessage.trim() || isLoading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-          </button>
-        </form>
       </div>
     </div>
   );

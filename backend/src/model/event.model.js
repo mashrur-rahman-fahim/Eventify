@@ -27,8 +27,14 @@ const eventSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String, // URL to uploaded image
-    default: null,
+    url: {
+      type: String, // URL to uploaded image
+      default: null,
+    },
+    public_id: {
+      type: String, // Cloudinary public_id for deletion
+      default: null,
+    },
   },
   clubId: {
     type: mongoose.Schema.Types.ObjectId,

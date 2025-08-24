@@ -66,10 +66,10 @@ const RecommendationCard = ({
       className="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
       onClick={handleClick}
     >
-      {event.image && (
+      {event.image?.url && (
         <figure className="relative">
           <img
-            src={event.image}
+            src={event.image.url}
             alt={event.title}
             className="w-full h-48 object-cover"
           />

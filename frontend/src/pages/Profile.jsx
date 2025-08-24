@@ -11,6 +11,8 @@ const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "" });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   // Error Modal
   const [errorModal, setErrorModal] = useState({
@@ -53,14 +55,37 @@ const Profile = () => {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setImagePreview("");
+    }
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.put("/api/updateUser", formData, {
+      const dataToSubmit = new FormData();
+      dataToSubmit.append("name", formData.name);
+      dataToSubmit.append("email", formData.email);
+      if (imageFile) {
+        dataToSubmit.append("image", imageFile);
+      }
+
+      const res = await api.put("/api/updateUserProfile", dataToSubmit, {
         withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
       setUser(res.data.user);
       setIsEditing(false);
+      setImageFile(null);
+      setImagePreview("");
     } catch (err) {
       console.error("Failed to update user", err);
       setErrorModal({
@@ -111,8 +136,16 @@ const Profile = () => {
       <main className="container mx-auto p-8">
         <div className="max-w-2xl mx-auto p-8 bg-base-100 rounded-2xl shadow-lg border border-base-200">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold">
-              {user?.name?.charAt(0).toUpperCase()}
+            <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold overflow-hidden">
+              {user?.image?.url ? (
+                <img
+                  src={user.image.url}
+                  alt={user?.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user?.name?.charAt(0).toUpperCase()
+              )}
             </div>
             <div>
               <h1 className="text-2xl font-bold">My Profile</h1>
@@ -152,6 +185,38 @@ const Profile = () => {
             </div>
           ) : (
             <form onSubmit={handleUpdate} className="space-y-5">
+              {/* Profile Image Upload */}
+              <div>
+                <label className="block text-sm font-semibold mb-1">
+                  Profile Picture
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={handleImageChange}
+                    className="file-input file-input-bordered w-full max-w-xs"
+                    accept="image/*"
+                  />
+                  {(imagePreview || user?.image?.url) && (
+                    <div className="avatar">
+                      <div className="w-16 h-16 rounded-full">
+                        <img
+                          src={imagePreview || user.image.url}
+                          alt="Profile Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <label className="label">
+                  <span className="label-text-alt text-base-content/70">
+                    Supported formats: JPG, PNG, GIF. Max size: 5MB
+                  </span>
+                </label>
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold mb-1">Name</label>
                 <input

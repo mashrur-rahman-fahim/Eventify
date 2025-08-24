@@ -17,6 +17,7 @@ import {
 } from "../controller/eventController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 import { isAdmin } from "../middleware/isAdmin.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -24,10 +25,22 @@ const router = express.Router();
 // router.use(verify);
 
 // Event routes
-router.post("/event/create/:clubId", verify, isAdmin, createEvent);
+router.post(
+  "/event/create/:clubId",
+  verify,
+  isAdmin,
+  upload.single("image"),
+  createEvent
+);
 router.get("/event/getAll", getAllEvents);
 router.get("/event/getEvent/:eventId", getEventById);
-router.put("/event/update/:eventId", verify, isAdmin, updateEvent);
+router.put(
+  "/event/update/:eventId",
+  verify,
+  isAdmin,
+  upload.single("image"),
+  updateEvent
+);
 router.delete("/event/delete/:eventId", verify, isAdmin, deleteEvent);
 router.get("/event/club/:clubId", getEventsByClub);
 router.get("/event/admin/events", verify, getAdminEvents);
