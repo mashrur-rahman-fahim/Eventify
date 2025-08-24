@@ -63,7 +63,7 @@ export const LoginPage = () => {
 
     setIsSubmitting(true);
     try {
-      await withLoading('login', 'Signing you in...', async () => {
+      await withLoading("login", "Signing you in...", async () => {
         const response = await api.post("/api/isEmailVerified", formData);
 
         if (!response.data.success) {
@@ -91,7 +91,7 @@ export const LoginPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-base-200 to-secondary/10 relative overflow-hidden">
       {/* Navbar */}
-      <div className="navbar bg-base-100/90 shadow-lg backdrop-blur-md">
+      <div className="navbar bg-base-100/90 shadow-lg sticky top-0 z-50 backdrop-blur-md">
         <div className="navbar-start">
           <Link
             to="/"
@@ -281,8 +281,8 @@ export const LoginPage = () => {
 
               {/* Submit Button */}
               <div className="form-control">
-                <LoadingButton 
-                  type="submit" 
+                <LoadingButton
+                  type="submit"
                   className="btn-primary w-full h-12"
                   loading={isSubmitting}
                   loadingText="Signing In..."
