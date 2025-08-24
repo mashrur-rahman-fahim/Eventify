@@ -39,6 +39,19 @@ const CertificateManager = () => {
     console.log("Certificate downloaded:", certificate.certificateNumber);
   };
 
+  const handleCertificateDelete = (certificateId) => {
+    // Remove the deleted certificate from the state
+    setCertificates((prevCertificates) =>
+      prevCertificates.filter((cert) => cert.id !== certificateId)
+    );
+
+    // Update stats
+    setStats((prevStats) => ({
+      total: prevStats.total - 1,
+      recent: prevStats.recent - 1,
+    }));
+  };
+
   if (error) {
     return (
       <div role="alert" className="alert alert-error">
@@ -165,6 +178,7 @@ const CertificateManager = () => {
                 key={certificate.id}
                 certificate={certificate}
                 onDownload={handleCertificateDownload}
+                onDelete={handleCertificateDelete}
               />
             ))}
           </div>

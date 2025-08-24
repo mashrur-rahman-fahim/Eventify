@@ -164,6 +164,11 @@ export const appToasts = {
       `Certificate for ${eventName} has been generated successfully.`,
       "Certificate Generated"
     ),
+  certificateDeleted: (eventName) =>
+    showToast.success(
+      `Certificate for ${eventName} has been deleted successfully.`,
+      "Certificate Deleted"
+    ),
 
   // Profile
   profileUpdated: () =>

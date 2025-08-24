@@ -44,4 +44,11 @@ router.post(
 // Verify certificate authenticity (public endpoint)
 router.get("/verify/:certificateId", certificateController.verifyCertificate);
 
+// Delete certificate (user can only delete their own certificates)
+router.delete(
+  "/:certificateId",
+  verify,
+  certificateController.deleteCertificate
+);
+
 export default router;

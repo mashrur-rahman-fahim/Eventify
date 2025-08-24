@@ -338,6 +338,46 @@ class CertificateController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  // Delete certificate (user can only delete their own certificates)
+  async deleteCertificate(req, res) {
+    try {
+      const { certificateId } = req.params;
+      const userId = req.user._id;
+
+      const certificate = await certificateService.getCertificateById(
+        certificateId
+      );
+
+      if (!certificate) {
+        return res.status(404).json({ error: "Certificate not found" });
+      }
+
+      // Check if user has permission to delete this certificate
+      // Handle both populated and non-populated userId field
+      const certificateUserId = certificate.userId._id || certificate.userId;
+
+      // Allow if user is the certificate owner OR if user is an admin
+      const role = await Role.findById(req.user.role);
+      const isAdmin = role?.permissions?.canManageAttendees;
+
+      if (certificateUserId.toString() !== userId.toString() && !isAdmin) {
+        return res
+          .status(403)
+          .json({ error: "Unauthorized to delete certificate" });
+      }
+
+      await certificateService.deleteCertificate(certificateId);
+
+      res.status(200).json({
+        success: true,
+        message: "Certificate deleted successfully",
+      });
+    } catch (error) {
+      console.error("Delete certificate error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 export default new CertificateController();
