@@ -28,12 +28,12 @@ import EventManagementPage from "./pages/EventManagementPage";
 import Profile from "./pages/Profile";
 
 function App() {
-  // Set default theme to "dim" on app initialization
+  // Set default theme to "dark" on app initialization
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (!savedTheme) {
-      localStorage.setItem("theme", "dim");
-      document.documentElement.setAttribute("data-theme", "dim");
+      localStorage.setItem("theme", "dark");
+      document.documentElement.setAttribute("data-theme", "dark");
     } else {
       document.documentElement.setAttribute("data-theme", savedTheme);
     }
