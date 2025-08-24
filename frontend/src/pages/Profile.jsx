@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
 import ConfirmationModal from "../components/ConfirmationModal";
-import { Navbar } from "../components/Navbar"; 
+import { Navbar } from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -164,7 +164,9 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1">Email</label>
+                <label className="block text-sm font-semibold mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   name="email"

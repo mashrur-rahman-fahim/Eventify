@@ -11,7 +11,7 @@ export const CertificatePage = () => {
 
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
     if (!isVerified) {

@@ -327,7 +327,9 @@ export const SingleEvent = () => {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm text-base-content/60">Location</p>
+                          <p className="text-sm text-base-content/60">
+                            Location
+                          </p>
                           <p className="font-semibold">{event.location}</p>
                         </div>
                       </div>
@@ -352,7 +354,9 @@ export const SingleEvent = () => {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm text-base-content/60">Category</p>
+                          <p className="text-sm text-base-content/60">
+                            Category
+                          </p>
                           <p className="font-semibold">{event.category}</p>
                         </div>
                       </div>
@@ -380,7 +384,8 @@ export const SingleEvent = () => {
                           </p>
                           <p className="font-semibold">
                             {registrationCount}
-                            {event.maxAttendees > 0 && ` / ${event.maxAttendees}`}
+                            {event.maxAttendees > 0 &&
+                              ` / ${event.maxAttendees}`}
                           </p>
                         </div>
                       </div>
@@ -436,7 +441,8 @@ export const SingleEvent = () => {
                           {event.userId.name || "Event Organizer"}
                         </h3>
                         <p className="text-base-content/70">
-                          {event.userId.email || "Contact organizer for details"}
+                          {event.userId.email ||
+                            "Contact organizer for details"}
                         </p>
                       </div>
                     </div>

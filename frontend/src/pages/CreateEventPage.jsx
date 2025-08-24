@@ -6,7 +6,8 @@ import api from "../utils/api";
 
 export const CreateEventPage = () => {
   const navigate = useNavigate();
-  const { isVerified, checkLogin, isAdmin, isLoading } = useContext(VerifyContext);
+  const { isVerified, checkLogin, isAdmin, isLoading } =
+    useContext(VerifyContext);
 
   // State for the list of clubs and the selected club
   const [clubs, setClubs] = useState([]);
@@ -36,13 +37,13 @@ export const CreateEventPage = () => {
   // Check authentication
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
-    if (!isVerified && !isLoading) {
+    if (!isVerified && !isLoading && !isAdmin) {
       navigate("/login");
     }
-  }, [isVerified, isLoading, navigate]);
+  }, [isVerified, isLoading, navigate, isAdmin]);
 
   // Fetch the admin's clubs
   useEffect(() => {
@@ -58,7 +59,7 @@ export const CreateEventPage = () => {
         setClubsLoading(false);
       }
     };
-    
+
     if (isVerified) {
       fetchClubs();
     }
@@ -170,7 +171,7 @@ export const CreateEventPage = () => {
   return (
     <div className="min-h-screen bg-base-200">
       <Navbar handleLogout={handleLogout} />
-      
+
       <main className="container mx-auto p-4 md:p-8 flex justify-center items-center">
         <div className="card w-full max-w-4xl bg-base-100 shadow-xl">
           <div className="card-body">

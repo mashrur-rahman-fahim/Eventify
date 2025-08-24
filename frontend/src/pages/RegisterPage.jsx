@@ -15,7 +15,7 @@ export const RegisterPage = () => {
 
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
     if (isVerified && !isLoading) {

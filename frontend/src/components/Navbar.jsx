@@ -1,12 +1,15 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 
 export const Navbar = ({ handleLogout }) => {
-  const { isAdmin } = useContext(VerifyContext);
+  const { isAdmin, checkLogin, logout } = useContext(VerifyContext);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  useEffect(() => {
+    checkLogin();
+  }, []);
 
   // Define links based on user role
   const navLinks = isAdmin ? (
@@ -54,6 +57,7 @@ export const Navbar = ({ handleLogout }) => {
     } finally {
       setIsLoggingOut(false);
       setShowLogoutModal(false);
+      logout();
     }
   };
 

@@ -3,15 +3,15 @@ import AllEvents from "../components/AllEvents";
 import { Navbar } from "../components/Navbar";
 import { VerifyContext } from "../context/VerifyContext";
 import { useNavigate } from "react-router-dom";
-import  api  from "../utils/api";
+import api from "../utils/api";
 
 export const AllEventPage = () => {
-    const navigate = useNavigate();
-  const { isVerified, checkLogin,isLoading } = useContext(VerifyContext);
+  const navigate = useNavigate();
+  const { isVerified, checkLogin, isLoading } = useContext(VerifyContext);
 
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
     if (!isVerified && !isLoading) {
@@ -30,7 +30,7 @@ export const AllEventPage = () => {
   };
   return (
     <div className="min-h-screen bg-base-200">
-         <Navbar handleLogout={handleLogout} />
+      <Navbar handleLogout={handleLogout} />
       <main className="container mx-auto p-4 md:p-8">
         <AllEvents />
       </main>

@@ -5,28 +5,29 @@ import { VerifyContext } from "../context/VerifyContext";
 import { Navbar } from "../components/Navbar";
 import AdminDashboard from "../components/dashboards/AdminDashboard";
 import StudentDashboard from "../components/dashboards/StudentDashboard";
-import  api  from "../utils/api";
+import api from "../utils/api";
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
-  const { isVerified, checkLogin, isAdmin, isLoading } = useContext(VerifyContext);
+  const { isVerified, checkLogin, isAdmin, isLoading } =
+    useContext(VerifyContext);
 
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
     if (!isVerified && !isLoading) {
-      navigate("/login");
+      navigate("/");
     }
   }, [isVerified, isLoading, navigate]);
 
   const handleLogout = async () => {
     try {
-     const res= await api.get("/api/logout");
-     if(res.status===200){
-      navigate("/");
-     }
+      const res = await api.get("/api/logout");
+      if (res.status === 200) {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Logout failed", error);
     }

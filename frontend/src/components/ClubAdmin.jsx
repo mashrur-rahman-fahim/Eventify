@@ -106,7 +106,6 @@ export const ClubAdmin = () => {
       setErrorMessage("Failed to delete club. Please try again.");
     }
   };
-  
 
   const leaveClub = async (clubId) => {
     try {
@@ -127,7 +126,9 @@ export const ClubAdmin = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-base-content">Club Administration</h1>
+          <h1 className="text-4xl font-bold text-base-content">
+            Club Administration
+          </h1>
           <p className="text-base-content/70 mt-2">
             Manage your clubs and create new communities.
           </p>
@@ -150,7 +151,7 @@ export const ClubAdmin = () => {
               />
             </svg>
             <span>{successMessage}</span>
-            <button 
+            <button
               className="btn btn-sm btn-ghost"
               onClick={() => setSuccessMessage("")}
             >
@@ -175,7 +176,7 @@ export const ClubAdmin = () => {
               />
             </svg>
             <span>{errorMessage}</span>
-            <button 
+            <button
               className="btn btn-sm btn-ghost"
               onClick={() => setErrorMessage("")}
             >
@@ -205,7 +206,7 @@ export const ClubAdmin = () => {
                 </svg>
                 Create New Club
               </h2>
-              
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -247,8 +248,8 @@ export const ClubAdmin = () => {
                 </div>
 
                 <div className="card-actions justify-end pt-4">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn btn-primary"
                     disabled={isCreating}
                   >
@@ -315,44 +316,57 @@ export const ClubAdmin = () => {
                 ) : (
                   <div className="space-y-4">
                     {club.map((clubItem) => (
-                      <div key={clubItem._id} className="card bg-base-200 shadow-sm">
+                      <div
+                        key={clubItem._id}
+                        className="card bg-base-200 shadow-sm"
+                      >
                         <div className="card-body p-4">
                           {editingClub === clubItem._id ? (
                             // Edit Mode
                             <div className="space-y-4">
                               <div className="form-control">
                                 <label className="label">
-                                  <span className="label-text font-medium">Club Name</span>
+                                  <span className="label-text font-medium">
+                                    Club Name
+                                  </span>
                                 </label>
                                 <input
                                   type="text"
                                   className="input input-bordered input-sm"
                                   value={editForm.name}
                                   onChange={(e) =>
-                                    setEditForm({ ...editForm, name: e.target.value })
+                                    setEditForm({
+                                      ...editForm,
+                                      name: e.target.value,
+                                    })
                                   }
                                 />
                               </div>
                               <div className="form-control">
                                 <label className="label">
-                                  <span className="label-text font-medium">Description</span>
+                                  <span className="label-text font-medium">
+                                    Description
+                                  </span>
                                 </label>
                                 <textarea
                                   className="textarea textarea-bordered textarea-sm h-20"
                                   value={editForm.description}
                                   onChange={(e) =>
-                                    setEditForm({ ...editForm, description: e.target.value })
+                                    setEditForm({
+                                      ...editForm,
+                                      description: e.target.value,
+                                    })
                                   }
                                 />
                               </div>
                               <div className="flex justify-end gap-2">
-                                <button 
+                                <button
                                   className="btn btn-sm btn-ghost"
                                   onClick={cancelEdit}
                                 >
                                   Cancel
                                 </button>
-                                <button 
+                                <button
                                   className="btn btn-sm btn-primary"
                                   onClick={() => updateClub(clubItem._id)}
                                 >
@@ -364,14 +378,20 @@ export const ClubAdmin = () => {
                             // View Mode
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
-                                <h3 className="card-title text-lg">{clubItem.name}</h3>
+                                <h3 className="card-title text-lg">
+                                  {clubItem.name}
+                                </h3>
                                 <p className="text-base-content/70 text-sm mt-2">
                                   {clubItem.description}
                                 </p>
                               </div>
-                              
+
                               <div className="dropdown dropdown-end">
-                                <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
+                                <div
+                                  tabIndex={0}
+                                  role="button"
+                                  className="btn btn-ghost btn-sm"
+                                >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="h-4 w-4"
@@ -387,9 +407,12 @@ export const ClubAdmin = () => {
                                     />
                                   </svg>
                                 </div>
-                                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                <ul
+                                  tabIndex={0}
+                                  className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                                >
                                   <li>
-                                    <button 
+                                    <button
                                       onClick={() => handleEditClick(clubItem)}
                                       className="text-info hover:bg-info hover:text-info-content"
                                     >
@@ -411,7 +434,7 @@ export const ClubAdmin = () => {
                                     </button>
                                   </li>
                                   <li>
-                                    <button 
+                                    <button
                                       onClick={() => leaveClub(clubItem._id)}
                                       className="text-warning hover:bg-warning hover:text-warning-content"
                                     >
@@ -433,7 +456,7 @@ export const ClubAdmin = () => {
                                     </button>
                                   </li>
                                   <li>
-                                    <button 
+                                    <button
                                       onClick={() => deleteClub(clubItem._id)}
                                       className="text-error hover:bg-error hover:text-error-content"
                                     >

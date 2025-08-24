@@ -12,7 +12,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
     if (isVerified && !isLoading) {
@@ -45,7 +45,6 @@ export const LoginPage = () => {
       }
       const loginResponse = await api.post("/api/login", formData);
       if (loginResponse.status === 200) {
-        
         navigate("/dashboard");
       } else {
         setError(loginResponse.data.message);

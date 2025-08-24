@@ -17,7 +17,7 @@ const EventManagementPage = () => {
 
   useEffect(() => {
     checkLogin();
-  }, [checkLogin]);
+  }, []);
 
   useEffect(() => {
     if (!isVerified) {

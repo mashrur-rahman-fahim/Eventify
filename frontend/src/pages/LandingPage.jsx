@@ -207,13 +207,16 @@ export const LandingPage = () => {
 
       {/* Hero Section with Carousel */}
       <section className="relative overflow-hidden">
-        <div className="carousel w-full h-screen relative"> {/* Added relative here */}
+        <div className="carousel w-full h-screen relative">
+          {" "}
+          {/* Added relative here */}
           {heroSlides.map((slide, index) => (
             <div
               key={index}
-              className={`carousel-item absolute w-full h-full transition-opacity duration-1000 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-                }`}
-              style={{ transform: 'none' }} // Prevent default carousel translation
+              className={`carousel-item absolute w-full h-full transition-opacity duration-1000 ${
+                index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
+              style={{ transform: "none" }} // Prevent default carousel translation
             >
               <div
                 className="w-full h-full bg-cover bg-center bg-no-repeat"
@@ -252,8 +255,9 @@ export const LandingPage = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? "bg-white" : "bg-white bg-opacity-50"
-                }`}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === currentSlide ? "bg-white" : "bg-white bg-opacity-50"
+              }`}
             />
           ))}
         </div>
@@ -443,7 +447,8 @@ export const LandingPage = () => {
               About Eventify
             </h2>
             <p className="text-xl text-base-content/70 max-w-3xl mx-auto">
-              Connecting students, empowering clubs, and building a more vibrant campus community through technology.
+              Connecting students, empowering clubs, and building a more vibrant
+              campus community through technology.
             </p>
           </div>
 
@@ -461,16 +466,40 @@ export const LandingPage = () => {
             <div className="space-y-6">
               <h3 className="text-3xl font-bold text-primary">Our Story</h3>
               <p className="text-base-content/80 leading-relaxed">
-                Created as a hackathon project, Eventify was born from a simple observation: university life is filled with incredible opportunities, but they're often hidden in plain sight. We saw students missing out on amazing events and club admins struggling with outdated tools. We knew there had to be a better way.
+                Created as a hackathon project, Eventify was born from a simple
+                observation: university life is filled with incredible
+                opportunities, but they're often hidden in plain sight. We saw
+                students missing out on amazing events and club admins
+                struggling with outdated tools. We knew there had to be a better
+                way.
               </p>
               <p className="text-base-content/80 leading-relaxed">
-                Our mission is to break down these barriers. By creating a single, intelligent platform, we empower students to discover events that match their passions and help clubs reach a wider audience. We believe that a connected campus is a thriving campus.
+                Our mission is to break down these barriers. By creating a
+                single, intelligent platform, we empower students to discover
+                events that match their passions and help clubs reach a wider
+                audience. We believe that a connected campus is a thriving
+                campus.
               </p>
               <div className="alert bg-base-200 shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-info shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  className="stroke-info shrink-0 w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
                 <div>
                   <h3 className="font-bold">Our Vision</h3>
-                  <div className="text-xs">To be the central hub for every university event, fostering a culture of participation, discovery, and community.</div>
+                  <div className="text-xs">
+                    To be the central hub for every university event, fostering
+                    a culture of participation, discovery, and community.
+                  </div>
                 </div>
               </div>
             </div>
