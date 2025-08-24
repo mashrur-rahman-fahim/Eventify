@@ -7,6 +7,13 @@
     href="https://res.cloudinary.com/dsb7ttev4/image/upload/v1756038824/vite_q17xlv.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eventify</title>
+  <script>
+    // Set dark theme immediately to prevent flash of unstyled content
+    (function () {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 
 <body>

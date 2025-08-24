@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent flash of unstyled content for dark theme */
+html {
+  background-color: #1f2937;
+  color: #f9fafb;
+}
+
+html[data-theme="light"] {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
 /* React Toastify CSS */
 @import "react-toastify/dist/ReactToastify.css";
 

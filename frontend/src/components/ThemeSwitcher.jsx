@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 const ThemeSwitcher = () => {
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dim");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [isOpen, setIsOpen] = useState(false);
 
   // All available themes from tailwind.config.js
@@ -123,7 +123,7 @@ const ThemeSwitcher = () => {
             >
               <span className="text-lg">{getThemeIcon(themeName)}</span>
               <span className="capitalize font-medium">
-                {themeName === "dim" ? "Dim (Default)" : themeName}
+                {themeName === "dark" ? "Dark (Default)" : themeName}
               </span>
               {theme === themeName && (
                 <svg
