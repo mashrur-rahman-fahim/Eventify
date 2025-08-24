@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import api from "../utils/api";
 import { appToasts } from "../utils/toast";
 import { LoadingCard } from "../components/loading";
+import { useUser } from "../context/UserContext";
 
 const ClubsDashboard = () => {
+  const { user } = useUser();
   const [allClubs, setAllClubs] = useState([]);
   const [filteredClubs, setFilteredClubs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,59 +101,73 @@ const ClubsDashboard = () => {
 
   const totalPages = Math.ceil(filteredClubs.length / clubsPerPage);
 
-  const ClubCard = ({ club }) => (
-    <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-      <div className="card-body">
-        <h2 className="card-title text-xl font-bold">
-          {club.name}
-          <div className="badge badge-secondary">
-            {club.admins?.length || 0} admins
+  // Check if current user is admin of a club
+  const isCurrentUserAdmin = (club) => {
+    if (!user) return false;
+    return club.admins?.some((admin) => admin._id === user._id);
+  };
+
+  const ClubCard = ({ club }) => {
+    const isAdmin = isCurrentUserAdmin(club);
+
+    return (
+      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+        <div className="card-body">
+          <h2 className="card-title text-xl font-bold">
+            {club.name}
+            <div className="badge badge-secondary">
+              {club.admins?.length || 0} admins
+            </div>
+          </h2>
+
+          <p className="text-base-content/70 line-clamp-3 mb-4">
+            {club.description}
+          </p>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {club.admins?.slice(0, 3).map((admin, index) => (
+              <div key={admin._id} className="badge badge-outline">
+                {admin.name}
+              </div>
+            ))}
+            {club.admins?.length > 3 && (
+              <div className="badge badge-ghost">
+                +{club.admins.length - 3} more
+              </div>
+            )}
           </div>
-        </h2>
 
-        <p className="text-base-content/70 line-clamp-3 mb-4">
-          {club.description}
-        </p>
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          {club.admins?.slice(0, 3).map((admin, index) => (
-            <div key={admin._id} className="badge badge-outline">
-              {admin.name}
-            </div>
-          ))}
-          {club.admins?.length > 3 && (
-            <div className="badge badge-ghost">
-              +{club.admins.length - 3} more
-            </div>
-          )}
-        </div>
-
-        <div className="card-actions justify-end">
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() => requestToJoinClub(club._id)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-            Join Club
-          </button>
-          <button className="btn btn-ghost btn-sm">View Details</button>
+          <div className="card-actions justify-end">
+            {isAdmin ? (
+              <div className="badge badge-primary">You're an admin</div>
+            ) : (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => requestToJoinClub(club._id)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Join Club
+              </button>
+            )}
+            <button className="btn btn-ghost btn-sm">View Details</button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const ClubCardSkeleton = () => (
     <div className="card bg-base-100 shadow-xl">

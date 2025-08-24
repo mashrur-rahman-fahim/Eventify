@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
 import { appToasts } from "../utils/toast";
+import { useUser } from "../context/UserContext";
 
 const AllClubsList = () => {
+  const { user } = useUser();
   const [allClubs, setAllClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,17 +19,16 @@ const AllClubsList = () => {
       setLoading(true);
       const response = await api.get("/api/club/getAll");
 
-      // Get current user ID
-      const currentUserId = getCurrentUserId();
-
       // Add join request status for each club
       const clubsWithRequestStatus = response.data.clubs.map((club) => ({
         ...club,
         hasPendingRequest:
-          club.joinRequests?.some(
-            (request) =>
-              request.userId === currentUserId && request.status === "pending"
-          ) || false,
+          (user &&
+            club.joinRequests?.some(
+              (request) =>
+                request.userId === user._id && request.status === "pending"
+            )) ||
+          false,
       }));
 
       setAllClubs(clubsWithRequestStatus);
@@ -67,22 +68,15 @@ const AllClubsList = () => {
     }
   };
 
-  const getCurrentUserId = () => {
-    // Get current user ID from localStorage or context
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    return user._id;
-  };
-
   const isCurrentUserAdmin = (club) => {
-    const currentUserId = getCurrentUserId();
-    return club.admins.some((admin) => admin._id === currentUserId);
+    if (!user) return false;
+    return club.admins.some((admin) => admin._id === user._id);
   };
 
   const hasPendingRequest = (club) => {
-    const currentUserId = getCurrentUserId();
+    if (!user) return false;
     return club.joinRequests?.some(
-      (request) =>
-        request.userId === currentUserId && request.status === "pending"
+      (request) => request.userId === user._id && request.status === "pending"
     );
   };
 
