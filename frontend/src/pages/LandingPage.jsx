@@ -175,11 +175,11 @@ export const LandingPage = () => {
               </li>
             </ul>
           </div>
-          <div className="btn btn-ghost text-2xl font-bold text-primary flex items-center gap-3">
+          <div className="btn btn-ghost text-xl font-bold text-primary flex items-center gap-2">
             <img
               src="https://res.cloudinary.com/dsb7ttev4/image/upload/v1756038824/vite_q17xlv.svg"
               alt="Eventify Logo"
-              className="w-10 h-10"
+              className="w-8 h-8"
             />
             <span>Eventify</span>
           </div>

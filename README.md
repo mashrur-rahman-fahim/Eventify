@@ -1,5 +1,9 @@
 # 🎉 Eventify - University Club Event Management Platform
 
+<div align="center">
+  <img src="frontend/public/vite.svg" alt="Eventify Logo" width="120" height="120">
+</div>
+
 A comprehensive full-stack web application designed for university clubs to organize events and for students to discover, register, and participate in them. Built with modern technologies featuring AI-powered recommendations, intelligent chatbot assistance, automatic certificate generation, and advanced event management capabilities.
 
 ## 🚀 Live Demo
