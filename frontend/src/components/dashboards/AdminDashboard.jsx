@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../../utils/api";
 import { ClubList } from "../ClubList";
 import AllClubsList from "../AllClubsList";
+import ConfirmationModal from "../ConfirmationModal";
 
 const AdminDashboard = () => {
   const [clubs, setClubs] = useState([]);
@@ -10,6 +11,17 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({ total: 0, upcoming: 0, attendees: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // Modal states
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    eventId: null,
+    isDeleting: false
+  });
+  const [errorModal, setErrorModal] = useState({
+    isOpen: false,
+    message: ""
+  });
 
   const calculateStats = (events) => {
     const upcomingCount = events.filter(
@@ -102,20 +114,62 @@ const AdminDashboard = () => {
     setClubs((prevClubs) => prevClubs.filter((club) => club._id !== clubId));
   };
 
-  const handleDeleteEvent = async (eventId) => {
-    if (
-      window.confirm("Are you sure you want to permanently delete this event?")
-    ) {
-      try {
-        await api.delete(`/api/event/delete/${eventId}`);
-        const updatedEvents = myEvents.filter((event) => event._id !== eventId);
-        setMyEvents(updatedEvents);
-        setStats(calculateStats(updatedEvents));
-      } catch (err) {
-        console.error("Failed to delete event", err);
-        alert("Could not delete the event.");
-      }
+  const handleDeleteEvent = (eventId) => {
+    setConfirmModal({
+      isOpen: true,
+      eventId: eventId,
+      isDeleting: false
+    });
+  };
+
+  const confirmDeleteEvent = async () => {
+    const { eventId } = confirmModal;
+    setConfirmModal(prev => ({ ...prev, isDeleting: true }));
+    
+    try {
+      await api.delete(`/api/event/delete/${eventId}`);
+      const updatedEvents = myEvents.filter((event) => event._id !== eventId);
+      setMyEvents(updatedEvents);
+      setStats(calculateStats(updatedEvents));
+      
+      // Close the confirmation modal
+      setConfirmModal({
+        isOpen: false,
+        eventId: null,
+        isDeleting: false
+      });
+    } catch (err) {
+      console.error("Failed to delete event", err);
+      
+      // Close confirmation modal and show error modal
+      setConfirmModal({
+        isOpen: false,
+        eventId: null,
+        isDeleting: false
+      });
+      
+      setErrorModal({
+        isOpen: true,
+        message: "Could not delete the event. Please try again later."
+      });
     }
+  };
+
+  const closeConfirmModal = () => {
+    if (!confirmModal.isDeleting) {
+      setConfirmModal({
+        isOpen: false,
+        eventId: null,
+        isDeleting: false
+      });
+    }
+  };
+
+  const closeErrorModal = () => {
+    setErrorModal({
+      isOpen: false,
+      message: ""
+    });
   };
 
   if (loading) {
@@ -283,6 +337,32 @@ const AdminDashboard = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Confirmation Modal for Delete */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmDeleteEvent}
+        title="Delete Event"
+        message="Are you sure you want to permanently delete this event? This action cannot be undone."
+        confirmText="Delete Event"
+        cancelText="Cancel"
+        type="error"
+        isLoading={confirmModal.isDeleting}
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={errorModal.isOpen}
+        onClose={closeErrorModal}
+        onConfirm={closeErrorModal}
+        title="Error"
+        message={errorModal.message}
+        confirmText="OK"
+        cancelText=""
+        type="error"
+        isLoading={false}
+      />
     </div>
   );
 };
