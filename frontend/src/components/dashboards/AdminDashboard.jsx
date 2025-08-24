@@ -11,16 +11,16 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({ total: 0, upcoming: 0, attendees: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   // Modal states
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     eventId: null,
-    isDeleting: false
+    isDeleting: false,
   });
   const [errorModal, setErrorModal] = useState({
     isOpen: false,
-    message: ""
+    message: "",
   });
 
   const calculateStats = (events) => {
@@ -118,39 +118,39 @@ const AdminDashboard = () => {
     setConfirmModal({
       isOpen: true,
       eventId: eventId,
-      isDeleting: false
+      isDeleting: false,
     });
   };
 
   const confirmDeleteEvent = async () => {
     const { eventId } = confirmModal;
-    setConfirmModal(prev => ({ ...prev, isDeleting: true }));
-    
+    setConfirmModal((prev) => ({ ...prev, isDeleting: true }));
+
     try {
       await api.delete(`/api/event/delete/${eventId}`);
       const updatedEvents = myEvents.filter((event) => event._id !== eventId);
       setMyEvents(updatedEvents);
       setStats(calculateStats(updatedEvents));
-      
+
       // Close the confirmation modal
       setConfirmModal({
         isOpen: false,
         eventId: null,
-        isDeleting: false
+        isDeleting: false,
       });
     } catch (err) {
       console.error("Failed to delete event", err);
-      
+
       // Close confirmation modal and show error modal
       setConfirmModal({
         isOpen: false,
         eventId: null,
-        isDeleting: false
+        isDeleting: false,
       });
-      
+
       setErrorModal({
         isOpen: true,
-        message: "Could not delete the event. Please try again later."
+        message: "Could not delete the event. Please try again later.",
       });
     }
   };
@@ -160,7 +160,7 @@ const AdminDashboard = () => {
       setConfirmModal({
         isOpen: false,
         eventId: null,
-        isDeleting: false
+        isDeleting: false,
       });
     }
   };
@@ -168,7 +168,7 @@ const AdminDashboard = () => {
   const closeErrorModal = () => {
     setErrorModal({
       isOpen: false,
-      message: ""
+      message: "",
     });
   };
 
