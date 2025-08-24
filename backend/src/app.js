@@ -34,28 +34,27 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      fontSrc: ["'self'", "data:"],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "blob:",
-        "https://res.cloudinary.com",
-        "https://avatars.githubusercontent.com",
-        "https://daintree.onrender.com",
-      ],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      fontSrc: ["'self'", "data:", "https:", "http:"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "http:", "*"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
       objectSrc: ["'none'"],
       connectSrc: [
         "'self'",
+        "https:",
+        "http:",
+        "https://res.cloudinary.com",
         "https://api.cloudinary.com",
         "https://avatars.githubusercontent.com",
         "https://daintree.onrender.com",
+        "https://images.unsplash.com",
+        "https://api.unsplash.com",
+        "https://images.pexels.com",
+        "https://api.pexels.com",
       ],
     },
   })
 );
-
 
 app.get("/test/email", async (req, res) => {
   try {
@@ -79,9 +78,17 @@ app.use("/api", recommendationRoute);
 app.use("/api/certificates", certificateRoute);
 
 if (process.env.NODE_ENV === "production") {
+  // Serve static files from the frontend dist directory
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
-  app.get("/*splat", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+
+  // Serve the vite.svg file specifically
+  app.get("/vite.svg", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dist/vite.svg"));
+  });
+
+  // Handle all other routes by serving the React app
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
   });
 }
 
