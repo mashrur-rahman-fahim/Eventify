@@ -92,7 +92,7 @@ export const Navbar = ({ handleLogout }) => {
             </ul>
           </div>
           {/* App Name / Logo */}
-          <Link to="/" className="btn btn-ghost text-xl">
+          <Link to="/dashboard" className="btn btn-ghost text-xl">
             Eventify
           </Link>
         </div>
