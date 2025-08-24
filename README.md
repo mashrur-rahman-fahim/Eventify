@@ -15,7 +15,7 @@ A comprehensive full-stack web application designed for university clubs to orga
 - **Password**: `mashrur`
 - **Role**: Club Admin (Full permissions)
 
-- ### Admin Account - 2
+### Admin Account - 2
 
 - **Email**: `ahnufkarimchowdhury@gmail.com`
 - **Password**: `ahnufck`
