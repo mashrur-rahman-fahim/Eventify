@@ -9,10 +9,16 @@ A comprehensive full-stack web application designed for university clubs to orga
 
 ## 🔐 Demo Credentials
 
-### Admin Account
+### Admin Account - 1
 
 - **Email**: `mashrur950@gmail.com`
 - **Password**: `mashrur`
+- **Role**: Club Admin (Full permissions)
+
+### Admin Account - 2
+
+- **Email**: `ahnufkarimchowdhury@gmail.com`
+- **Password**: `ahnufkc`
 - **Role**: Club Admin (Full permissions)
 
 ### Student Account
