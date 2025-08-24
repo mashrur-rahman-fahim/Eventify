@@ -5,6 +5,8 @@ import { TestPage } from "./pages/TestPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { VerifyEmail } from "./pages/VerifyEmail";
 import { LoginPage } from "./pages/LoginPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import { ChatbotProvider } from "./context/ChatbotContext";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -46,6 +48,11 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify/:token" element={<VerifyEmail />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPasswordPage />}
+          />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/create-event" element={<CreateEventPage />} />

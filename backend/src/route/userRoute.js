@@ -9,11 +9,19 @@ import { verify } from "../middleware/isLoggedIn.js";
 import { logoutUser } from "../controller/userController.js";
 import { deleteUser } from "../controller/userController.js";
 import { updateUser } from "../controller/userController.js";
+import {
+  forgotPassword,
+  resetPassword,
+  verifyResetToken,
+} from "../controller/userController.js";
 import upload from "../middleware/upload.js";
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+router.get("/verify-reset-token/:token", verifyResetToken);
 router.get("/getUserProfile", verify, getUserProfile);
 router.put(
   "/updateUserProfile",

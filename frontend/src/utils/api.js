@@ -77,4 +77,25 @@ export const chatbotAPI = {
   },
 };
 
+// Forgot Password API functions
+export const forgotPasswordAPI = {
+  requestPasswordReset: async (email) => {
+    const response = await api.post("/api/forgot-password", { email });
+    return response.data;
+  },
+
+  resetPassword: async (token, newPassword) => {
+    const response = await api.post("/api/reset-password", {
+      token,
+      newPassword,
+    });
+    return response.data;
+  },
+
+  verifyResetToken: async (token) => {
+    const response = await api.get(`/api/verify-reset-token/${token}`);
+    return response.data;
+  },
+};
+
 export default api;

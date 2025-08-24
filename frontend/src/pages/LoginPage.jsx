@@ -231,12 +231,12 @@ export const LoginPage = () => {
                 </div>
                 <label className="label">
                   <span></span>
-                  <a
-                    href="#"
+                  <Link
+                    to="/forgot-password"
                     className="label-text-alt link link-primary hover:link-hover font-medium"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </label>
               </div>
 
