@@ -4,14 +4,12 @@ import User from "../model/user.model.js";
 import Event from "../model/event.model.js";
 import Role from "../model/roles.model.js";
 
-// Create a new club
 export const createClub = async (req, res) => {
   try {
     const { name, description } = req.body;
     const userId = req.user._id;
     const role = await Role.findById(req.user.role);
 
-    // Check if user has permission to create clubs (ClubAdmin)
     if (!role.permissions.canCreateEvents) {
       return res.status(403).json({
         message: "You don't have permission to create clubs",
@@ -41,7 +39,6 @@ export const createClub = async (req, res) => {
   }
 };
 
-// Get all clubs
 export const getAllClubs = async (req, res) => {
   try {
     const clubs = await Club.find()
@@ -55,7 +52,6 @@ export const getAllClubs = async (req, res) => {
   }
 };
 
-// Get club by ID
 export const getClubById = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -80,7 +76,6 @@ export const getClubById = async (req, res) => {
   }
 };
 
-// Update club
 export const updateClub = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -97,14 +92,12 @@ export const updateClub = async (req, res) => {
     }
     const role = await Role.findById(req.user.role);
 
-    // Check if user has permission to edit clubs
     if (!role.permissions.canEditEvents) {
       return res.status(403).json({
         message: "You don't have permission to edit clubs",
       });
     }
 
-    // Check if user is club admin or creator
     const isAdmin = club.admins.some(
       (adminId) => adminId.toString() === req.user._id.toString()
     );
@@ -131,7 +124,6 @@ export const updateClub = async (req, res) => {
   }
 };
 
-// Request to join club
 export const requestToJoinClub = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -146,14 +138,12 @@ export const requestToJoinClub = async (req, res) => {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    // Check if user is already an admin
     if (club.admins.includes(userId)) {
       return res
         .status(400)
         .json({ message: "You are already an admin of this club" });
     }
 
-    // Check if user already has a pending request
     const existingRequest = club.joinRequests.find(
       (request) =>
         request.userId.toString() === userId.toString() &&
@@ -168,7 +158,6 @@ export const requestToJoinClub = async (req, res) => {
         });
     }
 
-    // Add join request
     club.joinRequests.push({
       userId,
       status: "pending",
@@ -183,7 +172,6 @@ export const requestToJoinClub = async (req, res) => {
   }
 };
 
-// Get all join requests for a club
 export const getJoinRequests = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -200,7 +188,6 @@ export const getJoinRequests = async (req, res) => {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    // Check if user is club admin
     const isAdmin = club.admins.some(
       (adminId) => adminId.toString() === req.user._id.toString()
     );
@@ -218,11 +205,10 @@ export const getJoinRequests = async (req, res) => {
   }
 };
 
-// Process join request
 export const processJoinRequest = async (req, res) => {
   try {
     const { clubId, requestId } = req.params;
-    const { action } = req.body; // "approve" or "reject"
+    const { action } = req.body;
 
     if (
       !mongoose.Types.ObjectId.isValid(clubId) ||
@@ -236,7 +222,6 @@ export const processJoinRequest = async (req, res) => {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    // Check if user is club admin
     const isAdmin = club.admins.some(
       (adminId) => adminId.toString() === req.user._id.toString()
     );
@@ -247,7 +232,6 @@ export const processJoinRequest = async (req, res) => {
       });
     }
 
-    // Find the request index
     const requestIndex = club.joinRequests.findIndex(
       (request) => request._id.toString() === requestId
     );
@@ -265,11 +249,9 @@ export const processJoinRequest = async (req, res) => {
     }
 
     if (action === "approve") {
-      // Add user to admins
       if (!club.admins.includes(request.userId)) {
         club.admins.push(request.userId);
 
-        // Add club to user's clubs array
         await User.findByIdAndUpdate(request.userId, {
           $push: { clubs: clubId },
         });
@@ -278,7 +260,6 @@ export const processJoinRequest = async (req, res) => {
       return res.status(400).json({ message: "Invalid action" });
     }
 
-    // Remove the request from the array regardless of approval or rejection
     club.joinRequests.splice(requestIndex, 1);
 
     await club.save();
@@ -299,7 +280,6 @@ export const processJoinRequest = async (req, res) => {
   }
 };
 
-// Admin leaves club
 export const leaveClub = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -314,7 +294,6 @@ export const leaveClub = async (req, res) => {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    // Check if user is an admin of this club
     const isAdmin = club.admins.some(
       (adminId) => adminId.toString() === userId.toString()
     );
@@ -325,12 +304,9 @@ export const leaveClub = async (req, res) => {
         .json({ message: "You are not an admin of this club" });
     }
 
-    // If this is the last admin, delete the club
     if (club.admins.length === 1) {
-      // Delete all events associated with this club
       await Event.deleteMany({ clubId });
 
-      // Remove club from all admins' clubs array
       await User.updateMany(
         { _id: { $in: club.admins } },
         { $pull: { clubs: clubId } }
@@ -343,20 +319,16 @@ export const leaveClub = async (req, res) => {
       });
     }
 
-    // Remove user from admins
     club.admins = club.admins.filter(
       (adminId) => adminId.toString() !== userId.toString()
     );
 
-    // If the leaving user is the creator, transfer ownership to another admin
     if (club.userId.toString() === userId.toString()) {
-      // Assign the creator role to the first available admin
       club.userId = club.admins[0];
     }
 
     await club.save();
 
-    // Remove club from user's clubs array
     await User.findByIdAndUpdate(userId, {
       $pull: { clubs: clubId },
     });
@@ -368,7 +340,6 @@ export const leaveClub = async (req, res) => {
   }
 };
 
-// Delete club
 export const deleteClub = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -383,27 +354,23 @@ export const deleteClub = async (req, res) => {
     }
     const role = await Role.findById(req.user.role);
 
-    // Check if user has permission to delete clubs
     if (!role.permissions.canDeleteEvents) {
       return res.status(403).json({
         message: "You don't have permission to delete clubs",
       });
     }
 
-    // Check if user is the creator
     if (club.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "Only the club creator can delete the club",
       });
     }
 
-    // Remove club from all admins' clubs array
     await User.updateMany(
       { _id: { $in: club.admins } },
       { $pull: { clubs: clubId } }
     );
 
-    // Delete all events associated with this club
     await Event.deleteMany({ clubId });
 
     await Club.findByIdAndDelete(clubId);

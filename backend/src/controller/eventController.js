@@ -4,7 +4,6 @@ import Club from "../model/club.model.js";
 import Registration from "../model/registration.model.js";
 import Role from "../model/roles.model.js";
 
-// Create a new event
 export const createEvent = async (req, res) => {
   try {
     const {
@@ -27,7 +26,6 @@ export const createEvent = async (req, res) => {
     }
     const role = await Role.findById(req.user.role);
 
-    // Check if user has permission to create events
     if (!role.permissions.canCreateEvents) {
       return res.status(403).json({
         message: "You don't have permission to create events",
@@ -39,7 +37,6 @@ export const createEvent = async (req, res) => {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    // Check if user is club admin
     const isAdmin = club.admins.some(
       (adminId) => adminId.toString() === userId.toString()
     );
@@ -62,12 +59,11 @@ export const createEvent = async (req, res) => {
       registrationDeadline,
       clubId,
       userId,
-      admins: [userId], // Creator becomes event admin
+      admins: [userId],
     });
 
     await event.save();
 
-    // Add event to club's events array
     club.events.push(event._id);
     await club.save();
 
@@ -81,18 +77,16 @@ export const createEvent = async (req, res) => {
   }
 };
 
-// Get all events
 export const getAllEvents = async (req, res) => {
   try {
     const { page = 1, limit = 10, category, search } = req.query;
     const query = { isActive: true };
     console.log(query);
-    // Filter by category
+
     if (category) {
       query.category = category;
     }
 
-    // Search by title or description
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -122,7 +116,6 @@ export const getAllEvents = async (req, res) => {
   }
 };
 
-// Get event by ID
 export const getEventById = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -141,7 +134,6 @@ export const getEventById = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Get registration count
     const registrationCount = await Registration.countDocuments({
       eventId,
       status: { $in: ["registered", "attended"] },
@@ -157,7 +149,6 @@ export const getEventById = async (req, res) => {
   }
 };
 
-// Update event
 export const updateEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -172,14 +163,12 @@ export const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
     const role = await Role.findById(req.user.role);
-    // Check if user has permission to edit events
     if (!role.permissions.canEditEvents) {
       return res.status(403).json({
         message: "You don't have permission to edit events",
       });
     }
 
-    // Check if user is the event creator or event admin
     const isEventAdmin = event.admins.some(
       (adminId) => adminId.toString() === req.user._id.toString()
     );
@@ -208,7 +197,6 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-// Delete event
 export const deleteEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -222,24 +210,20 @@ export const deleteEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
     const role = await Role.findById(req.user.role);
-    // Check if user has permission to delete events
     if (!role.permissions.canDeleteEvents) {
       return res.status(403).json({
         message: "You don't have permission to delete events",
       });
     }
 
-    // Check if user is the event creator
     if (event.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "Only the event creator can delete the event",
       });
     }
 
-    // Delete all registrations for this event
     await Registration.deleteMany({ eventId });
 
-    // Remove event from club's events array
     await Club.findByIdAndUpdate(event.clubId, {
       $pull: { events: eventId },
     });
@@ -253,7 +237,6 @@ export const deleteEvent = async (req, res) => {
   }
 };
 
-// Get events by club
 export const getEventsByClub = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -408,17 +391,16 @@ export const searchEventsByName = async (req, res) => {
   }
 };
 
-// Get featured events (latest top 10)
 export const getFeaturedEvents = async (req, res) => {
   try {
     const events = await Event.find({
       isActive: true,
-      date: { $gte: new Date() }, // Only future events
+      date: { $gte: new Date() },
     })
       .populate("clubId", "name")
       .populate("userId", "name email")
       .populate("admins", "name email")
-      .sort({ createdAt: -1, date: 1 }) // Sort by creation date (newest first), then by event date
+      .sort({ createdAt: -1, date: 1 })
       .limit(10);
 
     res.status(200).json({
@@ -431,21 +413,18 @@ export const getFeaturedEvents = async (req, res) => {
   }
 };
 
-// Get all future events with pagination and search
 export const getAllFutureEvents = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, category } = req.query;
     const query = {
       isActive: true,
-      date: { $gte: new Date() }, // Only future events
+      date: { $gte: new Date() },
     };
 
-    // Filter by category
     if (category) {
       query.category = category;
     }
 
-    // Search by event name (title)
     if (search && search.trim()) {
       query.title = { $regex: search.trim(), $options: "i" };
     }
@@ -454,7 +433,7 @@ export const getAllFutureEvents = async (req, res) => {
       .populate("clubId", "name")
       .populate("userId", "name email")
       .populate("admins", "name email")
-      .sort({ date: 1, time: 1 }) // Sort by date and time (earliest first)
+      .sort({ date: 1, time: 1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
@@ -474,15 +453,13 @@ export const getAllFutureEvents = async (req, res) => {
   }
 };
 
-// Get all unique categories from events
 export const getEventCategories = async (req, res) => {
   try {
     const categories = await Event.distinct("category", {
       isActive: true,
-      date: { $gte: new Date() }, // Only future events
+      date: { $gte: new Date() },
     });
 
-    // Sort categories alphabetically
     const sortedCategories = categories.sort();
 
     res.status(200).json({
@@ -494,7 +471,6 @@ export const getEventCategories = async (req, res) => {
   }
 };
 
-// Get events by user ID with pagination and filtering
 export const getUserEvents = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -508,13 +484,12 @@ export const getUserEvents = async (req, res) => {
 
     const query = {
       $or: [
-        { userId: userId }, // Events created by user
-        { admins: userId }, // Events where user is admin
-        { attendees: userId }, // Events where user is attendee
+        { userId: userId },
+        { admins: userId },
+        { attendees: userId },
       ],
     };
 
-    // Filter by status
     if (status === "active") {
       query.isActive = true;
       query.registrationDeadline = { $gte: new Date() };
@@ -533,12 +508,10 @@ export const getUserEvents = async (req, res) => {
       query.attendees = userId;
     }
 
-    // Filter by category
     if (category && category !== "all") {
       query.category = category;
     }
 
-    // Search by event name (title)
     if (search && search.trim()) {
       query.title = { $regex: search.trim(), $options: "i" };
     }
@@ -554,14 +527,12 @@ export const getUserEvents = async (req, res) => {
 
     const total = await Event.countDocuments(query);
 
-    // Get registration counts and user registration details
     const eventsWithRegistrationCounts = await Promise.all(
       events.map(async (event) => {
         const isAdmin = event.admins.some(
           (adminId) => adminId.toString() === userId.toString()
         );
 
-        // Get user's registration for this event
         const userRegistration = await Registration.findOne({
           eventId: event._id,
           userId: userId,
@@ -611,7 +582,6 @@ export const getUserEvents = async (req, res) => {
   }
 };
 
-// Get user event categories
 export const getUserEventCategories = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -620,7 +590,6 @@ export const getUserEventCategories = async (req, res) => {
       $or: [{ userId: userId }, { admins: userId }, { attendees: userId }],
     });
 
-    // Sort categories alphabetically
     const sortedCategories = categories.sort();
 
     res.status(200).json({
