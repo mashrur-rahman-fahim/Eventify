@@ -102,10 +102,21 @@ export const Navbar = ({ handleLogout }) => {
           <ul className="menu menu-horizontal px-1">{navLinks}</ul>
         </div>
 
-        {/* Navbar End: Logout Button */}
-        <div className="navbar-end">
-          <button 
-            onClick={handleLogoutClick} 
+        {/* Navbar End: Logout Button and profile*/}
+        <div className="navbar-end flex gap-3 items-center">
+          {/* Profile Icon */}
+          <Link to="/profile" className="btn btn-ghost btn-circle avatar">
+            <div className="w-10 rounded-full">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                alt="profile"
+              />
+            </div>
+          </Link>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogoutClick}
             className="btn btn-outline btn-error"
             disabled={isLoggingOut}
           >

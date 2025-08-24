@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
-import ConfirmationModal from "./ConfirmationModal";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { Navbar } from "../components/Navbar"; 
 import { useNavigate } from "react-router-dom";
 
