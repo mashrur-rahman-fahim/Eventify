@@ -31,7 +31,6 @@ const ClubManagementPage = () => {
       setLoading(true);
       const response = await api.get("/api/club/getClubByUserId");
 
-      // Fetch join requests for each club
       const clubsWithRequests = await Promise.all(
         response.data.clubs.map(async (club) => {
           try {
@@ -58,10 +57,8 @@ const ClubManagementPage = () => {
   };
 
   const handleRequestProcessed = () => {
-    // Refresh clubs data
     fetchMyClubs();
     if (selectedClub) {
-      // Refresh the selected club data
       const updatedClub = myClubs.find((club) => club._id === selectedClub._id);
       setSelectedClub(updatedClub);
     }
@@ -96,6 +93,10 @@ const ClubManagementPage = () => {
   return (
     <div>
       <Navbar handleLogout={handleLogout} />
+
+      {/* Toast Container */}
+      <div className="toast toast-top toast-end" id="toast-container"></div>
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -118,7 +119,7 @@ const ClubManagementPage = () => {
               {/* Clubs List */}
               <div>
                 <h3 className="text-xl font-semibold mb-4">Clubs I Admin</h3>
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                   {myClubs.map((club) => (
                     <div
                       key={club._id}
