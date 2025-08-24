@@ -23,6 +23,7 @@ import { AllEventPage } from "./pages/AllEventPage";
 import { MyEventPage } from "./pages/MyEventPage";
 import { CertificatePage } from "./pages/CertificatePage";
 import EventManagementPage from "./pages/EventManagementPage";
+import Profile from "./components/Profile";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/create-event" element={<CreateEventPage />} />
           <Route path="/club" element={<ClubPage />} />
+          <Route path="/profile" element={<Profile />} />
 
           <Route path="/event/edit/:eventId" element={<EditEventPage />} />
           <Route path="/club/edit/:clubId" element={<EditClubPage />} />
