@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import api from "../../utils/api";
 import { EventCard } from "../EventCard";
 import { EventCardSkeleton } from "../EventCardSkeleton";
@@ -11,22 +12,48 @@ const StudentDashboard = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [certificateStats, setCertificateStats] = useState({
+    total: 0,
+    recent: 0,
+  });
 
   useEffect(() => {
-    const fetchFeaturedEvents = async () => {
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/api/event/featured");
-        setFeaturedEvents(response.data.events);
-        setFilteredEvents(response.data.events);
+
+        // Fetch featured events and certificate stats in parallel
+        const [eventsResponse, certificatesResponse] = await Promise.all([
+          api.get("/api/event/featured"),
+          api
+            .get("/api/certificates/user/all")
+            .catch(() => ({ data: { certificates: [] } })),
+        ]);
+
+        setFeaturedEvents(eventsResponse.data.events);
+        setFilteredEvents(eventsResponse.data.events);
+
+        // Calculate certificate stats
+        const certificates = certificatesResponse.data.certificates || [];
+        const recentCerts = certificates.filter((cert) => {
+          const generated = new Date(cert.generatedAt);
+          const monthAgo = new Date();
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          return generated >= monthAgo;
+        });
+
+        setCertificateStats({
+          total: certificates.length,
+          recent: recentCerts.length,
+        });
       } catch (err) {
-        setError("Failed to load featured events. Please try again.");
+        setError("Failed to load dashboard data. Please try again.");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchFeaturedEvents();
+    fetchDashboardData();
   }, []);
 
   // Effect for debounced search
@@ -146,6 +173,75 @@ const StudentDashboard = () => {
           Discover events tailored to your interests and explore what's
           happening across campus.
         </p>
+      </div>
+
+      {/* Certificate Stats Section */}
+      <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-6 border border-primary/10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-2 text-primary">
+              Your Achievements
+            </h2>
+            <p className="text-base-content/70">
+              Track your event participation and certificates earned
+            </p>
+          </div>
+
+          <div className="stats shadow bg-base-100">
+            <div className="stat">
+              <div className="stat-figure text-primary">
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                  />
+                </svg>
+              </div>
+              <div className="stat-title">Total Certificates</div>
+              <div className="stat-value text-primary">
+                {certificateStats.total}
+              </div>
+            </div>
+
+            <div className="stat">
+              <div className="stat-figure text-secondary">
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div className="stat-title">This Month</div>
+              <div className="stat-value text-secondary">
+                {certificateStats.recent}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Link to="/certificates" className="btn btn-primary btn-sm">
+              View Certificates
+            </Link>
+            <Link to="/events" className="btn btn-outline btn-sm">
+              Find Events
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Recommendations Section */}

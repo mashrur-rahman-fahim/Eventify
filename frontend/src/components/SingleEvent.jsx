@@ -60,8 +60,8 @@ export const SingleEvent = () => {
 
       try {
         const [eventResponse, registrationResponse] = await Promise.all([
-          api.get(`api/event/getEvent/${id}`),
-          api.get(`api/event/getRegistrationByUser&event/${id}`),
+          api.get(`/api/event/getEvent/${id}`),
+          api.get(`/api/registration/user/${id}`),
         ]);
 
         setEvent(eventResponse.data.event);

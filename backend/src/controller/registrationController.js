@@ -3,6 +3,7 @@ import Registration from "../model/registration.model.js";
 import Event from "../model/event.model.js";
 import Club from "../model/club.model.js";
 import User from "../model/user.model.js";
+import Role from "../model/roles.model.js";
 import certificateService from "../services/certificateService.js";
 
 // Register for an event
@@ -14,7 +15,6 @@ export const registerForEvent = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
       return res.status(400).json({ message: "Invalid event ID" });
     }
-    
 
     const event = await Event.findById(eventId);
     if (!event) {
@@ -38,7 +38,6 @@ export const registerForEvent = async (req, res) => {
         eventId,
         status: { $in: ["registered", "attended"] },
       });
-    
 
       if (currentAttendees >= event.maxAttendees) {
         return res.status(400).json({ message: "Event is full" });
@@ -55,7 +54,6 @@ export const registerForEvent = async (req, res) => {
         .status(400)
         .json({ message: "You are already registered for this event" });
     }
-  
 
     const registration = new Registration({
       userId,
@@ -295,10 +293,10 @@ export const getRegistrationByUser = async (req, res) => {
     }
 
     const registrations = await Registration.find({ eventId, userId });
-    if(registrations.length > 0){
-      res.status(200).json({ success:true });
-    }else{
-      res.status(200).json({ success:false });
+    if (registrations.length > 0) {
+      res.status(200).json({ success: true });
+    } else {
+      res.status(200).json({ success: false });
     }
   } catch (error) {
     console.error(error);

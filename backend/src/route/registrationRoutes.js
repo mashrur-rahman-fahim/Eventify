@@ -5,7 +5,7 @@ import {
   getUserRegistrations,
   getEventRegistrations,
   updateRegistrationStatus,
-  getRegistrationByUser
+  getRegistrationByUser,
 } from "../controller/registrationController.js";
 import { verify } from "../middleware/isLoggedIn.js";
 
@@ -18,8 +18,8 @@ router.use(verify);
 router.post("/event/register/:eventId", registerForEvent);
 router.delete("/event/unregister/:eventId", unregisterFromEvent);
 router.get("/event/userRegistrations", getUserRegistrations);
-router.get("/event/eventRegistrations/:eventId", getEventRegistrations);
-router.put("/event/updateStatus/:registrationId", updateRegistrationStatus);
-router.get("/event/getRegistrationByUser&event/:eventId", getRegistrationByUser);
+router.get("/registration/event/:eventId", getEventRegistrations);
+router.put("/registration/:registrationId/status", updateRegistrationStatus);
+router.get("/registration/user/:eventId", getRegistrationByUser);
 
 export default router;

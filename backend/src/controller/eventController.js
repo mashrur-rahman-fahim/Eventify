@@ -554,12 +554,23 @@ export const getUserEvents = async (req, res) => {
 
     const total = await Event.countDocuments(query);
 
-    // Get registration counts for events where user is admin
+    // Get registration counts and user registration details
     const eventsWithRegistrationCounts = await Promise.all(
       events.map(async (event) => {
         const isAdmin = event.admins.some(
           (adminId) => adminId.toString() === userId.toString()
         );
+
+        // Get user's registration for this event
+        const userRegistration = await Registration.findOne({
+          eventId: event._id,
+          userId: userId,
+        });
+
+        const eventData = {
+          ...event.toObject(),
+          registration: userRegistration,
+        };
 
         if (isAdmin) {
           const registrationCount = await Registration.countDocuments({
@@ -567,18 +578,18 @@ export const getUserEvents = async (req, res) => {
             status: { $in: ["registered", "attended"] },
           });
           return {
-            ...event.toObject(),
+            ...eventData,
             registrationCount,
             userRole: "admin",
           };
         } else if (event.userId.toString() === userId.toString()) {
           return {
-            ...event.toObject(),
+            ...eventData,
             userRole: "creator",
           };
         } else {
           return {
-            ...event.toObject(),
+            ...eventData,
             userRole: "attendee",
           };
         }

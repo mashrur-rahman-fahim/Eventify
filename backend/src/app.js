@@ -22,6 +22,14 @@ const app = express();
 const __dirname = path.resolve();
 app.use(cookieParser());
 app.use(express.json());
+if (process.env.NODE_ENV !== "production") {
+  app.use(
+    cors({
+      origin: process.env.FRONTEND_URL || "http://localhost:5173",
+      credentials: true,
+    })
+  );
+}
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
@@ -48,14 +56,6 @@ app.use(
   })
 );
 
-if (process.env.NODE_ENV !== "production") {
-  app.use(
-    cors({
-      origin: process.env.FRONTEND_URL,
-      credentials: true,
-    })
-  );
-}
 app.get("/", (req, res) => {
   res.send("Hello World");
 });

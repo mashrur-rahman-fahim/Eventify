@@ -21,6 +21,8 @@ import ClubManagementPage from "./pages/ClubManagementPage";
 import { SingleEventPage } from "./pages/SingleEventPage";
 import { AllEventPage } from "./pages/AllEventPage";
 import { MyEventPage } from "./pages/MyEventPage";
+import { CertificatePage } from "./pages/CertificatePage";
+import EventManagementPage from "./pages/EventManagementPage";
 
 function App() {
   return (
@@ -46,6 +48,11 @@ function App() {
           <Route path="/event/:id" element={<SingleEventPage />} />
           <Route path="/events" element={<AllEventPage />} />
           <Route path="/my-events" element={<MyEventPage />} />
+          <Route path="/certificates" element={<CertificatePage />} />
+          <Route
+            path="/event/manage/:eventId"
+            element={<EventManagementPage />}
+          />
         </Routes>
         <ChatbotWidget />
       </BrowserRouter>

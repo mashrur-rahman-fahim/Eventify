@@ -191,6 +191,28 @@ const AdminDashboard = () => {
           <div className="stat-title">Total Registrations</div>
           <div className="stat-value">{stats.attendees}</div>
         </div>
+        <div className="stat">
+          <div className="stat-figure text-accent">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+              />
+            </svg>
+          </div>
+          <div className="stat-title">Certificates Generated</div>
+          <div className="stat-value text-accent">
+            {stats.certificates || 0}
+          </div>
+          <div className="stat-desc">Event completion certificates</div>
+        </div>
       </div>
 
       {/* --- Render the new ClubList component --- */}
@@ -228,7 +250,14 @@ const AdminDashboard = () => {
                   <td>
                     {event.attendees.length} / {event.maxAttendees || "∞"}
                   </td>
-                  <td className="flex gap-2 justify-center">
+                  <td className="flex gap-1 justify-center">
+                    <Link
+                      to={`/event/manage/${event._id}`}
+                      className="btn btn-sm btn-primary"
+                      title="Manage attendance and certificates"
+                    >
+                      Manage
+                    </Link>
                     <Link
                       to={`/event/edit/${event._id}`}
                       className="btn btn-sm btn-outline btn-info"
@@ -246,7 +275,7 @@ const AdminDashboard = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="text-center py-4">
+                <td colSpan="6" className="text-center py-4">
                   You have not created any events yet.
                 </td>
               </tr>

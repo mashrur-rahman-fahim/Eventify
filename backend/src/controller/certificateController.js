@@ -1,5 +1,8 @@
-import certificateService from "../services/certificateService.js";
+import CertificateService from "../services/certificateService.js";
+
+const certificateService = new CertificateService();
 import Registration from "../model/registration.model.js";
+import Role from "../model/roles.model.js";
 import fs from "fs";
 import path from "path";
 
@@ -8,7 +11,7 @@ class CertificateController {
   async generateCertificate(req, res) {
     try {
       const { registrationId } = req.params;
-      const { userId } = req.user; // From auth middleware
+      const userId = req.user._id; // From auth middleware
 
       // Check if user has permission to generate certificate for this registration
       const registration = await Registration.findById(registrationId);
@@ -16,8 +19,8 @@ class CertificateController {
         return res.status(404).json({ error: "Registration not found" });
       }
 
-      // Only allow if user is the participant or an admin of the event
-      if (registration.userId.toString() !== userId && !req.user.isAdmin) {
+      // Only allow if user is the participant
+      if (registration.userId.toString() !== userId.toString()) {
         return res
           .status(403)
           .json({ error: "Unauthorized to generate certificate" });
@@ -49,7 +52,14 @@ class CertificateController {
   async downloadCertificate(req, res) {
     try {
       const { certificateId } = req.params;
-      const { userId } = req.user;
+      const userId = req.user._id;
+
+      // Debug: Log user info
+      console.log("Download request from user:", {
+        userId: userId.toString(),
+        userEmail: req.user.email,
+        userName: req.user.name,
+      });
 
       const certificate = await certificateService.getCertificateById(
         certificateId
@@ -59,8 +69,34 @@ class CertificateController {
         return res.status(404).json({ error: "Certificate not found" });
       }
 
+      // Debug: Log certificate structure
+      console.log("Certificate found:", {
+        certificateId: certificate._id,
+        userId: certificate.userId,
+        userIdType: typeof certificate.userId,
+        isPopulated:
+          certificate.userId &&
+          typeof certificate.userId === "object" &&
+          certificate.userId._id,
+      });
+
       // Check if user has permission to download this certificate
-      if (certificate.userId.toString() !== userId && !req.user.isAdmin) {
+      // Handle both populated and non-populated userId field
+      const certificateUserId = certificate.userId._id || certificate.userId;
+      console.log("Authorization check:", {
+        requestUserId: userId.toString(),
+        certificateUserId: certificateUserId.toString(),
+        certificateId: certificateId,
+        authUserType: typeof userId,
+        certUserType: typeof certificateUserId,
+      });
+
+      if (certificateUserId.toString() !== userId.toString()) {
+        console.log("Authorization failed for certificate download:", {
+          requestUserId: userId.toString(),
+          certificateUserId: certificateUserId.toString(),
+          certificateId: certificateId,
+        });
         return res
           .status(403)
           .json({ error: "Unauthorized to download certificate" });
@@ -94,7 +130,7 @@ class CertificateController {
   async getCertificate(req, res) {
     try {
       const { certificateId } = req.params;
-      const { userId } = req.user;
+      const userId = req.user._id;
 
       const certificate = await certificateService.getCertificateById(
         certificateId
@@ -105,7 +141,15 @@ class CertificateController {
       }
 
       // Check if user has permission to view this certificate
-      if (certificate.userId.toString() !== userId && !req.user.isAdmin) {
+      // Handle both populated and non-populated userId field
+      const certificateUserId = certificate.userId._id || certificate.userId;
+
+      if (certificateUserId.toString() !== userId.toString()) {
+        console.log("Authorization failed for certificate view:", {
+          requestUserId: userId.toString(),
+          certificateUserId: certificateUserId.toString(),
+          certificateId: certificateId,
+        });
         return res
           .status(403)
           .json({ error: "Unauthorized to view certificate" });
@@ -133,7 +177,7 @@ class CertificateController {
   // Get all certificates for a user
   async getUserCertificates(req, res) {
     try {
-      const { userId } = req.user;
+      const userId = req.user._id;
 
       const certificates = await certificateService.getCertificatesByUser(
         userId
@@ -161,7 +205,9 @@ class CertificateController {
     try {
       const { eventId } = req.params;
 
-      if (!req.user.isAdmin) {
+      // Check if user has admin permissions
+      const role = await Role.findById(req.user.role);
+      if (!role?.permissions?.canManageAttendees) {
         return res.status(403).json({ error: "Admin access required" });
       }
 
@@ -192,7 +238,9 @@ class CertificateController {
     try {
       const { eventId } = req.params;
 
-      if (!req.user.isAdmin) {
+      // Check if user has admin permissions
+      const role = await Role.findById(req.user.role);
+      if (!role?.permissions?.canManageAttendees) {
         return res.status(403).json({ error: "Admin access required" });
       }
 

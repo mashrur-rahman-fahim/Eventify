@@ -16,17 +16,22 @@ const MyEvent = () => {
   const [total, setTotal] = useState(0);
   const [eventsPerPage] = useState(12);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
   // Fetch events function
   const fetchEvents = useCallback(
-    async (page = 1, search = "", category = "all") => {
+    async (page = 1, search = "", category = "all", status = "all") => {
       try {
         setLoading(true);
         const params = new URLSearchParams({
           page: page.toString(),
           limit: eventsPerPage.toString(),
-          status: "upcoming",
         });
+
+        // Only add status if not "all"
+        if (status !== "all") {
+          params.append("status", status);
+        }
 
         if (search.trim()) {
           params.append("search", search.trim());
@@ -67,35 +72,31 @@ const MyEvent = () => {
 
   // Initial load
   useEffect(() => {
-    fetchEvents(1, "", "all");
+    fetchEvents(1, "", "all", "all");
     fetchCategories();
   }, [fetchEvents, fetchCategories]);
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce(async (searchValue) => {
-      if (!searchValue.trim()) {
-        await fetchEvents(1, "", selectedCategory);
+  // Handle search input change with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      if (!searchTerm.trim()) {
+        await fetchEvents(1, "", selectedCategory, selectedStatus);
         setIsSearching(false);
         return;
       }
 
       try {
         setIsSearching(true);
-        await fetchEvents(1, searchValue, selectedCategory);
+        await fetchEvents(1, searchTerm, selectedCategory, selectedStatus);
       } catch (err) {
         console.error("Search error:", err);
       } finally {
         setIsSearching(false);
       }
-    }, 500),
-    [fetchEvents, selectedCategory]
-  );
+    }, 500);
 
-  // Handle search input change
-  useEffect(() => {
-    debouncedSearch(searchTerm);
-  }, [searchTerm, debouncedSearch]);
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, fetchEvents, selectedCategory, selectedStatus]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -103,13 +104,19 @@ const MyEvent = () => {
 
   // Handle page change
   const handlePageChange = async (pageNumber) => {
-    await fetchEvents(pageNumber, searchTerm, selectedCategory);
+    await fetchEvents(pageNumber, searchTerm, selectedCategory, selectedStatus);
   };
 
   // Handle category filter
   const handleCategoryFilter = async (category) => {
     setSelectedCategory(category);
-    await fetchEvents(1, searchTerm, category);
+    await fetchEvents(1, searchTerm, category, selectedStatus);
+  };
+
+  // Handle status filter
+  const handleStatusFilter = async (status) => {
+    setSelectedStatus(status);
+    await fetchEvents(1, searchTerm, selectedCategory, status);
   };
 
   const renderContent = () => {
@@ -293,7 +300,7 @@ const MyEvent = () => {
             </div>
           </div>
 
-          {/* Category Filter */}
+          {/* Category and Status Filters */}
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <div className="flex gap-2 min-w-0">
               <select
@@ -310,6 +317,20 @@ const MyEvent = () => {
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </option>
                 ))}
+              </select>
+
+              <select
+                className="select select-bordered w-full sm:w-auto"
+                onChange={(e) => handleStatusFilter(e.target.value)}
+                value={selectedStatus}
+              >
+                <option value="all">All Events</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="past">Past Events</option>
+                <option value="active">Active Registration</option>
+                <option value="created">Created by Me</option>
+                <option value="admin">Admin Events</option>
+                <option value="attending">Attending</option>
               </select>
             </div>
           </div>

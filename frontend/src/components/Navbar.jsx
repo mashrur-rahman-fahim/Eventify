@@ -21,6 +21,9 @@ export const Navbar = ({ handleLogout }) => {
       <li>
         <Link to="/create-event">Create Event</Link>
       </li>
+      <li>
+        <Link to="/certificates">Certificates</Link>
+      </li>
     </>
   ) : (
     <>
@@ -30,6 +33,9 @@ export const Navbar = ({ handleLogout }) => {
       </li>
       <li>
         <Link to="/events">All Events</Link>
+      </li>
+      <li>
+        <Link to="/certificates">My Certificates</Link>
       </li>
     </>
   );

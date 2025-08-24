@@ -60,17 +60,7 @@ const certificateSchema = new mongoose.Schema({
   },
 });
 
-// Generate certificate number
-certificateSchema.pre("save", async function (next) {
-  if (!this.certificateNumber) {
-    const count = await mongoose.model("Certificate").countDocuments();
-    this.certificateNumber = `CERT-${String(count + 1).padStart(
-      6,
-      "0"
-    )}-${new Date().getFullYear()}`;
-  }
-  next();
-});
+// Certificate number is now generated explicitly in the service
 
 const Certificate = mongoose.model("Certificate", certificateSchema);
 export default Certificate;
