@@ -435,6 +435,49 @@ export const LandingPage = () => {
         </div>
       </section>
 
+      {/* About Us Section */}
+      <section id="about" className="py-20 bg-base-100">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold mb-4 text-base-content">
+              About Eventify
+            </h2>
+            <p className="text-xl text-base-content/70 max-w-3xl mx-auto">
+              Connecting students, empowering clubs, and building a more vibrant campus community through technology.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Image Column */}
+            <div className="order-last md:order-first">
+              <img
+                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+                alt="Students collaborating on a project"
+                className="rounded-2xl shadow-xl w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Text Content Column */}
+            <div className="space-y-6">
+              <h3 className="text-3xl font-bold text-primary">Our Story</h3>
+              <p className="text-base-content/80 leading-relaxed">
+                Created as a hackathon project, Eventify was born from a simple observation: university life is filled with incredible opportunities, but they're often hidden in plain sight. We saw students missing out on amazing events and club admins struggling with outdated tools. We knew there had to be a better way.
+              </p>
+              <p className="text-base-content/80 leading-relaxed">
+                Our mission is to break down these barriers. By creating a single, intelligent platform, we empower students to discover events that match their passions and help clubs reach a wider audience. We believe that a connected campus is a thriving campus.
+              </p>
+              <div className="alert bg-base-200 shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-info shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div>
+                  <h3 className="font-bold">Our Vision</h3>
+                  <div className="text-xs">To be the central hub for every university event, fostering a culture of participation, discovery, and community.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-neutral text-neutral-content">
         <div className="container mx-auto px-4 text-center">
