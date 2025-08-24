@@ -77,7 +77,6 @@ class CertificateService {
       }_${Date.now()}.pdf`;
       const filePath = path.join(this.certificatesDir, fileName);
 
-      // Format date
       const eventDate = new Date(certificateData.eventDate).toLocaleDateString(
         "en-US",
         {
@@ -93,209 +92,139 @@ class CertificateService {
         day: "numeric",
       });
 
-      // Create PDF document
+      // Create PDF
       const doc = new PDFDocument({
         size: "A4",
         layout: "landscape",
-        margins: {
-          top: 50,
-          bottom: 50,
-          left: 50,
-          right: 50,
-        },
+        margins: { top: 40, bottom: 40, left: 50, right: 50 },
       });
 
-      // Pipe PDF to file
       const writeStream = fs.createWriteStream(filePath);
       doc.pipe(writeStream);
 
-      // Set up fonts and colors
-      const primaryColor = "#2c3e50";
-      const secondaryColor = "#3498db";
-      const accentColor = "#7f8c8d";
+      // 🎨 Colors
+      const primary = "#1B4F72";
+      const secondary = "#D4AC0D";
+      const accent = "#566573";
 
-      // Draw border
-      doc
-        .rect(20, 20, doc.page.width - 40, doc.page.height - 40)
-        .lineWidth(3)
-        .stroke(primaryColor);
+      // 🖼️ Background watermark (optional logo in center)
+      // doc.image(path.join(__dirname, "logo.png"), doc.page.width/2 - 100, doc.page.height/2 - 100, {width: 200, opacity: 0.1});
 
-      // Inner border
+      // 🖼️ Border
       doc
-        .rect(35, 35, doc.page.width - 70, doc.page.height - 70)
-        .lineWidth(1)
-        .stroke(secondaryColor);
+        .rect(25, 25, doc.page.width - 50, doc.page.height - 50)
+        .lineWidth(6)
+        .stroke(secondary);
+      doc
+        .rect(40, 40, doc.page.width - 80, doc.page.height - 80)
+        .lineWidth(2)
+        .stroke(primary);
 
-      // Header - University name
+      // 🏛️ Header
       doc
-        .fontSize(24)
+        .fontSize(26)
+        .fill(primary)
         .font("Helvetica-Bold")
-        .fill(primaryColor)
-        .text(
-          "Ahsanullah University of Science and Technology",
-          doc.page.width / 2,
-          80,
-          {
-            align: "center",
-          }
-        );
-
-      // Motto
+        .text("Ahsanullah University of Science and Technology", 0, 70, {
+          align: "center",
+        });
       doc
         .fontSize(12)
+        .fill(accent)
         .font("Helvetica-Oblique")
-        .fill(accentColor)
-        .text(
-          "Excellence in Education and Innovation",
-          doc.page.width / 2,
-          110,
-          {
-            align: "center",
-          }
-        );
+        .text("Excellence in Education and Innovation", { align: "center" });
 
-      // Main title
+      // 🏆 Title
+      doc.moveDown(2);
       doc
-        .fontSize(36)
+        .fontSize(40)
+        .fill(primary)
         .font("Helvetica-Bold")
-        .fill(primaryColor)
-        .text("CERTIFICATE OF PARTICIPATION", doc.page.width / 2, 160, {
-          align: "center",
-        });
+        .text("Certificate of Participation", { align: "center" });
 
-      // Subtitle
+      // 📜 Subtitle
+      doc.moveDown(1.5);
       doc
         .fontSize(16)
+        .fill(accent)
         .font("Helvetica")
-        .fill(accentColor)
-        .text("This is to certify that", doc.page.width / 2, 220, {
-          align: "center",
-        });
+        .text("This is proudly presented to", { align: "center" });
 
-      // Participant name
+      // 👤 Participant Name
+      doc.moveDown(0.5);
       doc
-        .fontSize(28)
+        .fontSize(34)
+        .fill(primary)
         .font("Helvetica-Bold")
-        .fill(primaryColor)
-        .text(certificateData.participantName, doc.page.width / 2, 250, {
-          align: "center",
-        });
+        .text(certificateData.participantName, { align: "center" });
 
-      // Another subtitle
+      // 📖 Event details
+      doc.moveDown(1.2);
       doc
         .fontSize(16)
-        .font("Helvetica")
-        .fill(accentColor)
-        .text("has successfully participated in", doc.page.width / 2, 300, {
-          align: "center",
-        });
-
-      // Event title
+        .fill(accent)
+        .text("for successfully participating in", { align: "center" });
+      doc.moveDown(0.5);
       doc
-        .fontSize(20)
+        .fontSize(22)
+        .fill(primary)
         .font("Helvetica-Bold")
-        .fill(primaryColor)
-        .text(certificateData.eventTitle, doc.page.width / 2, 330, {
-          align: "center",
-        });
+        .text(certificateData.eventTitle, { align: "center" });
 
-      // Event details
+      doc.moveDown(0.3);
       doc
         .fontSize(14)
+        .fill(accent)
         .font("Helvetica")
-        .fill(accentColor)
-        .text(
-          `held on ${eventDate} at ${certificateData.eventLocation}`,
-          doc.page.width / 2,
-          360,
-          {
-            align: "center",
-          }
-        );
+        .text(`Held on ${eventDate} at ${certificateData.eventLocation}`, {
+          align: "center",
+        });
+      doc.text(`Organized by ${certificateData.clubName}`, { align: "center" });
 
-      doc
-        .fontSize(14)
-        .font("Helvetica")
-        .fill(accentColor)
-        .text(
-          `Organized by ${certificateData.clubName}`,
-          doc.page.width / 2,
-          380,
-          {
-            align: "center",
-          }
-        );
-
-      // Signatures
-      const signatureY = 450;
-      const leftSignatureX = 150;
-      const rightSignatureX = doc.page.width - 150;
-
-      // Left signature
-      doc
-        .moveTo(leftSignatureX - 60, signatureY)
-        .lineTo(leftSignatureX + 60, signatureY)
-        .lineWidth(2)
-        .stroke(primaryColor);
-
+      // ✍️ Signatures
+      const sigY = 480; // ⬅️ was 430, now moved down ~50px
+      doc.moveTo(150, sigY).lineTo(300, sigY).lineWidth(2).stroke(primary);
       doc
         .fontSize(12)
-        .font("Helvetica-Bold")
-        .fill(primaryColor)
-        .text("Event Organizer", leftSignatureX, signatureY + 10, {
+        .fill(primary)
+        .text("Event Organizer", 150, sigY + 10, {
+          width: 150,
           align: "center",
         });
 
-      // Right signature
       doc
-        .moveTo(rightSignatureX - 60, signatureY)
-        .lineTo(rightSignatureX + 60, signatureY)
+        .moveTo(doc.page.width - 300, sigY)
+        .lineTo(doc.page.width - 150, sigY)
         .lineWidth(2)
-        .stroke(primaryColor);
+        .stroke(primary);
+      doc.text("Director", doc.page.width - 300, sigY + 10, {
+        width: 150,
+        align: "center",
+      });
 
-      doc
-        .fontSize(12)
-        .font("Helvetica-Bold")
-        .fill(primaryColor)
-        .text("Director", rightSignatureX, signatureY + 10, {
-          align: "center",
-        });
-
-      // Footer
+      // 📌 Footer
       doc
         .fontSize(10)
-        .font("Helvetica")
-        .fill(accentColor)
+        .fill(accent)
         .text(
           `Certificate ID: ${certificateData.registrationId}`,
-          70,
-          doc.page.height - 80
+          50,
+          doc.page.height - 60
         );
+      doc.text(
+        `Generated on: ${generatedDate}`,
+        doc.page.width - 200,
+        doc.page.height - 60,
+        { align: "right" }
+      );
 
-      doc
-        .fontSize(10)
-        .font("Helvetica")
-        .fill(accentColor)
-        .text(
-          `Generated on: ${generatedDate}`,
-          doc.page.width - 200,
-          doc.page.height - 80,
-          {
-            align: "right",
-          }
-        );
-
-      // Finalize PDF
       doc.end();
 
-      // Return a promise that resolves when the file is written
       return new Promise((resolve, reject) => {
-        writeStream.on("finish", () => {
-          resolve(fileName);
-        });
-        writeStream.on("error", (error) => {
-          reject(new Error(`PDF generation failed: ${error.message}`));
-        });
+        writeStream.on("finish", () => resolve(fileName));
+        writeStream.on("error", (error) =>
+          reject(new Error(`PDF generation failed: ${error.message}`))
+        );
       });
     } catch (error) {
       throw new Error(`PDF generation failed: ${error.message}`);

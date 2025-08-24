@@ -1,5 +1,6 @@
 import React from "react";
 import api from "../utils/api";
+import { appToasts } from "../utils/toast";
 
 const CertificateCard = ({ certificate, onDownload }) => {
   const handleDownload = async () => {
@@ -27,7 +28,7 @@ const CertificateCard = ({ certificate, onDownload }) => {
       }
     } catch (error) {
       console.error("Error downloading certificate:", error);
-      alert("Failed to download certificate. Please try again.");
+      appToasts.serverError();
     }
   };
 

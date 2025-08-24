@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from "../utils/api";
+import { appToasts } from "../utils/toast";
 
 const AdminCertificateManager = ({ event }) => {
   const [certificates, setCertificates] = useState([]);
@@ -20,15 +21,16 @@ const AdminCertificateManager = ({ event }) => {
         });
         setShowCertificates(true);
 
-        const message = `✅ Successfully generated ${response.data.generatedCertificates.length} certificates!`;
-        alert(message);
+        appToasts.certificateGenerated(
+          `${response.data.generatedCertificates.length} certificates`
+        );
       }
     } catch (error) {
       console.error("Error generating certificates:", error);
       const errorMessage =
         error.response?.data?.error ||
         "Failed to generate certificates. Please try again.";
-      alert(`❌ ${errorMessage}`);
+      appToasts.serverError();
     }
   };
 
@@ -46,7 +48,7 @@ const AdminCertificateManager = ({ event }) => {
       }
     } catch (error) {
       console.error("Error fetching certificates:", error);
-      alert("❌ Failed to fetch certificates. Please try again.");
+      appToasts.serverError();
     }
   };
 
@@ -72,7 +74,7 @@ const AdminCertificateManager = ({ event }) => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading certificate:", error);
-      alert("❌ Failed to download certificate. Please try again.");
+      appToasts.serverError();
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
+import { appToasts } from "../utils/toast";
 
 const CertificateGenerator = ({
   event,
@@ -46,16 +47,14 @@ const CertificateGenerator = ({
           onCertificateGenerated(response.data.certificate);
         }
 
-        alert(
-          "🎉 Certificate generated successfully! You can now download it."
-        );
+        appToasts.certificateGenerated(event.title);
       }
     } catch (error) {
       console.error("Error generating certificate:", error);
       const errorMessage =
         error.response?.data?.error ||
         "Failed to generate certificate. Please try again.";
-      alert(`❌ ${errorMessage}`);
+      appToasts.serverError();
     }
   };
 
@@ -85,7 +84,7 @@ const CertificateGenerator = ({
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading certificate:", error);
-      alert("❌ Failed to download certificate. Please try again.");
+      appToasts.serverError();
     }
   };
 
