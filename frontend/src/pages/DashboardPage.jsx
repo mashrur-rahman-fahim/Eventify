@@ -25,7 +25,7 @@ export const DashboardPage = () => {
     try {
      const res= await api.get("/api/logout");
      if(res.status===200){
-      navigate("/login");
+      navigate("/");
      }
     } catch (error) {
       console.error("Logout failed", error);
