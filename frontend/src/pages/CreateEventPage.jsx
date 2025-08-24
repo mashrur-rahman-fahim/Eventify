@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { VerifyContext } from "../context/VerifyContext";
+import { Navbar } from "../components/Navbar";
 import api from "../utils/api";
 
 export const CreateEventPage = () => {
   const navigate = useNavigate();
+  const { isVerified, checkLogin, isAdmin, isLoading } = useContext(VerifyContext);
 
   // State for the list of clubs and the selected club
   const [clubs, setClubs] = useState([]);
@@ -30,6 +33,17 @@ export const CreateEventPage = () => {
   const [error, setError] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
 
+  // Check authentication
+  useEffect(() => {
+    checkLogin();
+  }, [checkLogin]);
+
+  useEffect(() => {
+    if (!isVerified && !isLoading) {
+      navigate("/login");
+    }
+  }, [isVerified, isLoading, navigate]);
+
   // Fetch the admin's clubs
   useEffect(() => {
     const fetchClubs = async () => {
@@ -44,8 +58,22 @@ export const CreateEventPage = () => {
         setClubsLoading(false);
       }
     };
-    fetchClubs();
-  }, []);
+    
+    if (isVerified) {
+      fetchClubs();
+    }
+  }, [isVerified]);
+
+  const handleLogout = async () => {
+    try {
+      const res = await api.get("/api/logout");
+      if (res.status === 200) {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -130,258 +158,269 @@ export const CreateEventPage = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-base-200 p-4 md:p-8 flex justify-center items-center">
-      <div className="card w-full max-w-4xl bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h1 className="text-3xl font-bold text-center mb-6">
-            Create New Event
-          </h1>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* --- NEW: Club Selection Dropdown --- */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Organizing Club</span>
-              </label>
-              <select
-                name="club"
-                value={selectedClubId}
-                onChange={handleClubChange}
-                className={`select select-bordered w-full ${
-                  validationErrors.club && "select-error"
-                }`}
-                disabled={clubsLoading}
-              >
-                <option value="" disabled>
-                  {clubsLoading ? "Loading clubs..." : "Select a club"}
-                </option>
-                {clubs.map((club) => (
-                  <option key={club._id} value={club._id}>
-                    {club.name}
-                  </option>
-                ))}
-              </select>
-              {validationErrors.club && (
-                <span className="text-error text-xs mt-1">
-                  {validationErrors.club}
-                </span>
-              )}
-            </div>
-
-            {/* Title */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Event Title</span>
-              </label>
-              <input
-                type="text"
-                name="title"
-                onChange={handleChange}
-                placeholder="e.g., Annual Tech Summit"
-                className={`input input-bordered w-full ${
-                  validationErrors.title && "input-error"
-                }`}
-              />
-              {validationErrors.title && (
-                <span className="text-error text-xs mt-1">
-                  {validationErrors.title}
-                </span>
-              )}
-            </div>
-
-            {/* ... (rest of the form fields remain exactly the same) ... */}
-
-            {/* Description */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Description</span>
-              </label>
-              <textarea
-                name="description"
-                onChange={handleChange}
-                className={`textarea textarea-bordered h-28 ${
-                  validationErrors.description && "textarea-error"
-                }`}
-                placeholder="Provide details about the event..."
-              ></textarea>
-              {validationErrors.description && (
-                <span className="text-error text-xs mt-1">
-                  {validationErrors.description}
-                </span>
-              )}
-            </div>
-
-            {/* Date & Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Event Date</span>
-                </label>
-                <input
-                  type="date"
-                  name="date"
-                  onChange={handleChange}
-                  className={`input input-bordered w-full ${
-                    validationErrors.date && "input-error"
-                  }`}
-                />
-                {validationErrors.date && (
-                  <span className="text-error text-xs mt-1">
-                    {validationErrors.date}
-                  </span>
-                )}
-              </div>
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Event Time</span>
-                </label>
-                <input
-                  type="time"
-                  name="time"
-                  onChange={handleChange}
-                  className={`input input-bordered w-full ${
-                    validationErrors.time && "input-error"
-                  }`}
-                />
-                {validationErrors.time && (
-                  <span className="text-error text-xs mt-1">
-                    {validationErrors.time}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Location & Category */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Location</span>
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  onChange={handleChange}
-                  placeholder="e.g., University Auditorium"
-                  className={`input input-bordered w-full ${
-                    validationErrors.location && "input-error"
-                  }`}
-                />
-                {validationErrors.location && (
-                  <span className="text-error text-xs mt-1">
-                    {validationErrors.location}
-                  </span>
-                )}
-              </div>
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Category</span>
-                </label>
-                <input
-                  type="text"
-                  name="category"
-                  onChange={handleChange}
-                  placeholder="e.g., Workshop, Social, Tech Talk"
-                  className={`input input-bordered w-full ${
-                    validationErrors.category && "input-error"
-                  }`}
-                />
-                {validationErrors.category && (
-                  <span className="text-error text-xs mt-1">
-                    {validationErrors.category}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Max Attendees & Registration Deadline */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Max Attendees (Optional)</span>
-                </label>
-                <input
-                  type="number"
-                  name="maxAttendees"
-                  onChange={handleChange}
-                  placeholder="Leave blank for unlimited"
-                  className="input input-bordered w-full"
-                  min="0"
-                />
-              </div>
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Registration Deadline</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  name="registrationDeadline"
-                  onChange={handleChange}
-                  className={`input input-bordered w-full ${
-                    validationErrors.registrationDeadline && "input-error"
-                  }`}
-                />
-                {validationErrors.registrationDeadline && (
-                  <span className="text-error text-xs mt-1">
-                    {validationErrors.registrationDeadline}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Image Upload & Preview */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Event Poster (Optional)</span>
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="file"
-                  name="image"
-                  onChange={handleImageChange}
-                  className="file-input file-input-bordered w-full max-w-xs"
-                  accept="image/*"
-                />
-                {imagePreview && (
-                  <div className="avatar">
-                    <div className="w-24 rounded">
-                      <img src={imagePreview} alt="Image Preview" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Global Error Message */}
-            {error && (
-              <div role="alert" className="alert alert-error text-sm">
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                type="button"
-                onClick={() => navigate("/dashboard")}
-                className="btn btn-ghost"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="loading loading-spinner"></span>
-                ) : (
-                  "Create Event"
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+  // Show loading or redirect if not authenticated
+  if (!isVerified && isLoading) {
+    return (
+      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+        <div className="loading loading-spinner loading-lg"></div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-base-200">
+      <Navbar handleLogout={handleLogout} />
+      
+      <main className="container mx-auto p-4 md:p-8 flex justify-center items-center">
+        <div className="card w-full max-w-4xl bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h1 className="text-3xl font-bold text-center mb-6">
+              Create New Event
+            </h1>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* --- NEW: Club Selection Dropdown --- */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Organizing Club</span>
+                </label>
+                <select
+                  name="club"
+                  value={selectedClubId}
+                  onChange={handleClubChange}
+                  className={`select select-bordered w-full ${
+                    validationErrors.club && "select-error"
+                  }`}
+                  disabled={clubsLoading}
+                >
+                  <option value="" disabled>
+                    {clubsLoading ? "Loading clubs..." : "Select a club"}
+                  </option>
+                  {clubs.map((club) => (
+                    <option key={club._id} value={club._id}>
+                      {club.name}
+                    </option>
+                  ))}
+                </select>
+                {validationErrors.club && (
+                  <span className="text-error text-xs mt-1">
+                    {validationErrors.club}
+                  </span>
+                )}
+              </div>
+
+              {/* Title */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Event Title</span>
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  onChange={handleChange}
+                  placeholder="e.g., Annual Tech Summit"
+                  className={`input input-bordered w-full ${
+                    validationErrors.title && "input-error"
+                  }`}
+                />
+                {validationErrors.title && (
+                  <span className="text-error text-xs mt-1">
+                    {validationErrors.title}
+                  </span>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Description</span>
+                </label>
+                <textarea
+                  name="description"
+                  onChange={handleChange}
+                  className={`textarea textarea-bordered h-28 ${
+                    validationErrors.description && "textarea-error"
+                  }`}
+                  placeholder="Provide details about the event..."
+                ></textarea>
+                {validationErrors.description && (
+                  <span className="text-error text-xs mt-1">
+                    {validationErrors.description}
+                  </span>
+                )}
+              </div>
+
+              {/* Date & Time */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Event Date</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="date"
+                    onChange={handleChange}
+                    className={`input input-bordered w-full ${
+                      validationErrors.date && "input-error"
+                    }`}
+                  />
+                  {validationErrors.date && (
+                    <span className="text-error text-xs mt-1">
+                      {validationErrors.date}
+                    </span>
+                  )}
+                </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Event Time</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="time"
+                    onChange={handleChange}
+                    className={`input input-bordered w-full ${
+                      validationErrors.time && "input-error"
+                    }`}
+                  />
+                  {validationErrors.time && (
+                    <span className="text-error text-xs mt-1">
+                      {validationErrors.time}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Location & Category */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Location</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    onChange={handleChange}
+                    placeholder="e.g., University Auditorium"
+                    className={`input input-bordered w-full ${
+                      validationErrors.location && "input-error"
+                    }`}
+                  />
+                  {validationErrors.location && (
+                    <span className="text-error text-xs mt-1">
+                      {validationErrors.location}
+                    </span>
+                  )}
+                </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Category</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="category"
+                    onChange={handleChange}
+                    placeholder="e.g., Workshop, Social, Tech Talk"
+                    className={`input input-bordered w-full ${
+                      validationErrors.category && "input-error"
+                    }`}
+                  />
+                  {validationErrors.category && (
+                    <span className="text-error text-xs mt-1">
+                      {validationErrors.category}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Max Attendees & Registration Deadline */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Max Attendees (Optional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="maxAttendees"
+                    onChange={handleChange}
+                    placeholder="Leave blank for unlimited"
+                    className="input input-bordered w-full"
+                    min="0"
+                  />
+                </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Registration Deadline</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="registrationDeadline"
+                    onChange={handleChange}
+                    className={`input input-bordered w-full ${
+                      validationErrors.registrationDeadline && "input-error"
+                    }`}
+                  />
+                  {validationErrors.registrationDeadline && (
+                    <span className="text-error text-xs mt-1">
+                      {validationErrors.registrationDeadline}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Image Upload & Preview */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Event Poster (Optional)</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={handleImageChange}
+                    className="file-input file-input-bordered w-full max-w-xs"
+                    accept="image/*"
+                  />
+                  {imagePreview && (
+                    <div className="avatar">
+                      <div className="w-24 rounded">
+                        <img src={imagePreview} alt="Image Preview" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Global Error Message */}
+              {error && (
+                <div role="alert" className="alert alert-error text-sm">
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => navigate("/dashboard")}
+                  className="btn btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="loading loading-spinner"></span>
+                  ) : (
+                    "Create Event"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

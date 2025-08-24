@@ -1,10 +1,28 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
+import ConfirmationModal from "./ConfirmationModal";
 
 const EventAttendanceManager = ({ event }) => {
   const [registrations, setRegistrations] = useState([]);
   const [error, setError] = useState("");
 
+  // Modal states
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    registrationId: null,
+    newStatus: null,
+    isLoading: false,
+    isBulk: false,
+    bulkIds: []
+  });
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    message: ""
+  });
+  const [errorModal, setErrorModal] = useState({
+    isOpen: false,
+    message: ""
+  });
 
   useEffect(() => {
     if (event) {
@@ -22,39 +40,163 @@ const EventAttendanceManager = ({ event }) => {
     }
   };
 
-  const updateAttendanceStatus = async (registrationId, newStatus) => {
-    try {
-      const response = await api.put(
-        `/api/registration/${registrationId}/status`,
-        {
-          status: newStatus,
-        }
-      );
+  const handleStatusChange = (registrationId, newStatus) => {
+    const statusMessages = {
+      attended: "Mark this participant as attended?",
+      registered: "Change status back to registered?",
+      cancelled: "Cancel this participant's registration?"
+    };
 
-      if (response.data.registration) {
-        // Update the local state
+    setConfirmModal({
+      isOpen: true,
+      registrationId: registrationId,
+      newStatus: newStatus,
+      isLoading: false,
+      isBulk: false,
+      message: statusMessages[newStatus] || "Update attendance status?",
+      bulkIds: []
+    });
+  };
+
+  const handleBulkAttended = () => {
+    const registeredIds = registrations
+      .filter((r) => r.status === "registered")
+      .map((r) => r._id);
+
+    if (registeredIds.length === 0) return;
+
+    setConfirmModal({
+      isOpen: true,
+      registrationId: null,
+      newStatus: "attended",
+      isLoading: false,
+      isBulk: true,
+      message: `Mark all ${registeredIds.length} registered participants as attended?`,
+      bulkIds: registeredIds
+    });
+  };
+
+  const confirmStatusChange = async () => {
+    setConfirmModal(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      if (confirmModal.isBulk) {
+        // Handle bulk update
+        await Promise.all(
+          confirmModal.bulkIds.map(id => 
+            api.put(`/api/registration/${id}/status`, {
+              status: confirmModal.newStatus,
+            })
+          )
+        );
+
+        // Update local state for all bulk items
         setRegistrations((prev) =>
           prev.map((reg) =>
-            reg._id === registrationId
+            confirmModal.bulkIds.includes(reg._id)
               ? {
                   ...reg,
-                  status: newStatus,
-                  attendedAt: newStatus === "attended" ? new Date() : null,
+                  status: confirmModal.newStatus,
+                  attendedAt: confirmModal.newStatus === "attended" ? new Date() : null,
                 }
               : reg
           )
         );
 
-        if (newStatus === "attended") {
-          alert(`✅ Marked as attended! Certificate will be auto-generated.`);
-        } else {
-          alert(`✅ Status updated to "${newStatus}"`);
+        setSuccessModal({
+          isOpen: true,
+          message: `✅ Successfully marked ${confirmModal.bulkIds.length} participants as attended! Certificates will be auto-generated.`
+        });
+      } else {
+        // Handle single update
+        const response = await api.put(
+          `/api/registration/${confirmModal.registrationId}/status`,
+          {
+            status: confirmModal.newStatus,
+          }
+        );
+
+        if (response.data.registration) {
+          // Update the local state
+          setRegistrations((prev) =>
+            prev.map((reg) =>
+              reg._id === confirmModal.registrationId
+                ? {
+                    ...reg,
+                    status: confirmModal.newStatus,
+                    attendedAt: confirmModal.newStatus === "attended" ? new Date() : null,
+                  }
+                : reg
+            )
+          );
+
+          const successMessages = {
+            attended: "✅ Marked as attended! Certificate will be auto-generated.",
+            registered: "✅ Status updated to registered.",
+            cancelled: "✅ Registration cancelled."
+          };
+
+          setSuccessModal({
+            isOpen: true,
+            message: successMessages[confirmModal.newStatus] || "✅ Status updated successfully!"
+          });
         }
       }
+
+      // Close confirmation modal
+      setConfirmModal({
+        isOpen: false,
+        registrationId: null,
+        newStatus: null,
+        isLoading: false,
+        isBulk: false,
+        bulkIds: []
+      });
     } catch (error) {
       console.error("Error updating attendance:", error);
-      alert(`❌ Failed to update status. Please try again.`);
+      
+      // Close confirmation modal and show error
+      setConfirmModal({
+        isOpen: false,
+        registrationId: null,
+        newStatus: null,
+        isLoading: false,
+        isBulk: false,
+        bulkIds: []
+      });
+      
+      setErrorModal({
+        isOpen: true,
+        message: "❌ Failed to update status. Please try again."
+      });
     }
+  };
+
+  const closeConfirmModal = () => {
+    if (!confirmModal.isLoading) {
+      setConfirmModal({
+        isOpen: false,
+        registrationId: null,
+        newStatus: null,
+        isLoading: false,
+        isBulk: false,
+        bulkIds: []
+      });
+    }
+  };
+
+  const closeSuccessModal = () => {
+    setSuccessModal({
+      isOpen: false,
+      message: ""
+    });
+  };
+
+  const closeErrorModal = () => {
+    setErrorModal({
+      isOpen: false,
+      message: ""
+    });
   };
 
   const getStatusBadge = (status) => {
@@ -183,14 +325,7 @@ const EventAttendanceManager = ({ event }) => {
       {/* Quick Actions */}
       <div className="flex gap-2">
         <button
-          onClick={() => {
-            const registeredIds = registrations
-              .filter((r) => r.status === "registered")
-              .map((r) => r._id);
-            registeredIds.forEach((id) =>
-              updateAttendanceStatus(id, "attended")
-            );
-          }}
+          onClick={handleBulkAttended}
           className="btn btn-success btn-sm"
           disabled={
             registrations.filter((r) => r.status === "registered").length === 0
@@ -271,16 +406,16 @@ const EventAttendanceManager = ({ event }) => {
                     </td>
                     <td>
                       <div className="flex gap-1 justify-center">
-                                                 {registration.status !== "attended" && (
-                           <button
-                             onClick={() =>
-                               updateAttendanceStatus(
-                                 registration._id,
-                                 "attended"
-                               )
-                             }
-                             className="btn btn-success btn-xs gap-1"
-                           >
+                        {registration.status !== "attended" && (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(
+                                registration._id,
+                                "attended"
+                              )
+                            }
+                            className="btn btn-success btn-xs gap-1"
+                          >
                             <svg
                               className="w-3 h-3"
                               fill="none"
@@ -298,16 +433,16 @@ const EventAttendanceManager = ({ event }) => {
                           </button>
                         )}
 
-                                                 {registration.status !== "registered" && (
-                           <button
-                             onClick={() =>
-                               updateAttendanceStatus(
-                                 registration._id,
-                                 "registered"
-                               )
-                             }
-                             className="btn btn-warning btn-xs gap-1"
-                           >
+                        {registration.status !== "registered" && (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(
+                                registration._id,
+                                "registered"
+                              )
+                            }
+                            className="btn btn-warning btn-xs gap-1"
+                          >
                             <svg
                               className="w-3 h-3"
                               fill="none"
@@ -325,16 +460,16 @@ const EventAttendanceManager = ({ event }) => {
                           </button>
                         )}
 
-                                                 {registration.status !== "cancelled" && (
-                           <button
-                             onClick={() =>
-                               updateAttendanceStatus(
-                                 registration._id,
-                                 "cancelled"
-                               )
-                             }
-                             className="btn btn-error btn-xs gap-1"
-                           >
+                        {registration.status !== "cancelled" && (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(
+                                registration._id,
+                                "cancelled"
+                              )
+                            }
+                            className="btn btn-error btn-xs gap-1"
+                          >
                             <svg
                               className="w-3 h-3"
                               fill="none"
@@ -399,6 +534,45 @@ const EventAttendanceManager = ({ event }) => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmStatusChange}
+        title={confirmModal.isBulk ? "Bulk Update Attendance" : "Update Attendance Status"}
+        message={confirmModal.message}
+        confirmText={confirmModal.isBulk ? "Mark All as Attended" : "Update Status"}
+        cancelText="Cancel"
+        type={confirmModal.newStatus === "cancelled" ? "error" : "info"}
+        isLoading={confirmModal.isLoading}
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={successModal.isOpen}
+        onClose={closeSuccessModal}
+        onConfirm={closeSuccessModal}
+        title="Success"
+        message={successModal.message}
+        confirmText="OK"
+        cancelText=""
+        type="success"
+        isLoading={false}
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={errorModal.isOpen}
+        onClose={closeErrorModal}
+        onConfirm={closeErrorModal}
+        title="Error"
+        message={errorModal.message}
+        confirmText="OK"
+        cancelText=""
+        type="error"
+        isLoading={false}
+      />
     </div>
   );
 };
