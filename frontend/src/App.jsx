@@ -9,6 +9,7 @@ import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import { ChatbotProvider } from "./context/ChatbotContext";
+import { UserProvider } from "./context/UserContext";
 import ChatbotWidget from "./components/ChatbotWidget";
 import { LandingPage } from "./pages/LandingPage";
 import CreateEventPage from "./pages/CreateEventPage";
@@ -40,43 +41,45 @@ function App() {
   }, []);
 
   return (
-    <ChatbotProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/test" element={<TestPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/verify/:token" element={<VerifyEmail />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route
-            path="/reset-password/:token"
-            element={<ResetPasswordPage />}
-          />
-          <Route path="/chatbot" element={<ChatbotPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/create-event" element={<CreateEventPage />} />
-          <Route path="/club" element={<ClubPage />} />
-          <Route path="/profile" element={<Profile />} />
+    <UserProvider>
+      <ChatbotProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/test" element={<TestPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify/:token" element={<VerifyEmail />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
+            <Route path="/chatbot" element={<ChatbotPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/create-event" element={<CreateEventPage />} />
+            <Route path="/club" element={<ClubPage />} />
+            <Route path="/profile" element={<Profile />} />
 
-          <Route path="/event/edit/:eventId" element={<EditEventPage />} />
-          <Route path="/club/edit/:clubId" element={<EditClubPage />} />
+            <Route path="/event/edit/:eventId" element={<EditEventPage />} />
+            <Route path="/club/edit/:clubId" element={<EditClubPage />} />
 
-          <Route path="/club-dashboard" element={<ClubsDashboard />} />
-          <Route path="/club-management" element={<ClubManagementPage />} />
+            <Route path="/club-dashboard" element={<ClubsDashboard />} />
+            <Route path="/club-management" element={<ClubManagementPage />} />
 
-          <Route path="/event/:id" element={<SingleEventPage />} />
-          <Route path="/events" element={<AllEventPage />} />
-          <Route path="/my-events" element={<MyEventPage />} />
-          <Route path="/certificates" element={<CertificatePage />} />
-          <Route
-            path="/event/manage/:eventId"
-            element={<EventManagementPage />}
-          />
-        </Routes>
-        <ChatbotWidget />
-      </BrowserRouter>
-    </ChatbotProvider>
+            <Route path="/event/:id" element={<SingleEventPage />} />
+            <Route path="/events" element={<AllEventPage />} />
+            <Route path="/my-events" element={<MyEventPage />} />
+            <Route path="/certificates" element={<CertificatePage />} />
+            <Route
+              path="/event/manage/:eventId"
+              element={<EventManagementPage />}
+            />
+          </Routes>
+          <ChatbotWidget />
+        </BrowserRouter>
+      </ChatbotProvider>
+    </UserProvider>
   );
 }
 

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import api from "../utils/api";
 import { VerifyContext } from "./VerifyContext";
+
 export const VerifyProvider = ({ children }) => {
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  
   const checkLogin = async () => {
     try {
       setIsLoading(true);
@@ -23,9 +25,14 @@ export const VerifyProvider = ({ children }) => {
     }
   };
 
+  const logout = () => {
+    setIsVerified(false);
+    setIsAdmin(false);
+  };
+
   return (
     <VerifyContext.Provider
-      value={{ isAdmin, isVerified, setIsVerified, isLoading, checkLogin }}
+      value={{ isAdmin, isVerified, setIsVerified, isLoading, checkLogin, logout }}
     >
       {children}
     </VerifyContext.Provider>

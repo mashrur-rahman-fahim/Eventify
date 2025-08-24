@@ -237,9 +237,21 @@ export const updateEvent = async (req, res) => {
       (adminId) => adminId.toString() === req.user._id.toString()
     );
 
-    if (!isEventAdmin && event.userId.toString() !== req.user._id.toString()) {
+    // Check if user is club admin
+    const club = await Club.findById(event.clubId);
+    const isClubAdmin =
+      club &&
+      club.admins.some(
+        (adminId) => adminId.toString() === req.user._id.toString()
+      );
+
+    if (
+      !isEventAdmin &&
+      !isClubAdmin &&
+      event.userId.toString() !== req.user._id.toString()
+    ) {
       return res.status(403).json({
-        message: "Only event admins can update event details",
+        message: "Only event admins or club admins can update event details",
       });
     }
 
@@ -294,9 +306,17 @@ export const deleteEvent = async (req, res) => {
       });
     }
 
-    if (event.userId.toString() !== req.user._id.toString()) {
+    // Check if user is club admin
+    const club = await Club.findById(event.clubId);
+    const isClubAdmin =
+      club &&
+      club.admins.some(
+        (adminId) => adminId.toString() === req.user._id.toString()
+      );
+
+    if (event.userId.toString() !== req.user._id.toString() && !isClubAdmin) {
       return res.status(403).json({
-        message: "Only the event creator can delete the event",
+        message: "Only the event creator or club admins can delete the event",
       });
     }
 
@@ -364,8 +384,16 @@ export const getAdminEvents = async (req, res) => {
     const userId = req.user._id;
     const { page = 1, limit = 10, status = "all" } = req.query;
 
+    // First, get all clubs where the user is an admin
+    const userClubs = await Club.find({ admins: userId }).select("_id");
+    const clubIds = userClubs.map((club) => club._id);
+
+    // Build query to include events where user is admin OR events from clubs where user is admin
     const query = {
-      admins: userId,
+      $or: [
+        { admins: userId }, // Events where user is directly an admin
+        { clubId: { $in: clubIds } }, // Events from clubs where user is admin
+      ],
     };
 
     if (status === "active") {
@@ -422,23 +450,35 @@ export const getAdminEventStats = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const totalEvents = await Event.countDocuments({ admins: userId });
+    // First, get all clubs where the user is an admin
+    const userClubs = await Club.find({ admins: userId }).select("_id");
+    const clubIds = userClubs.map((club) => club._id);
+
+    // Build query to include events where user is admin OR events from clubs where user is admin
+    const baseQuery = {
+      $or: [
+        { admins: userId }, // Events where user is directly an admin
+        { clubId: { $in: clubIds } }, // Events from clubs where user is admin
+      ],
+    };
+
+    const totalEvents = await Event.countDocuments(baseQuery);
     const activeEvents = await Event.countDocuments({
-      admins: userId,
+      ...baseQuery,
       isActive: true,
       registrationDeadline: { $gte: new Date() },
     });
     const pastEvents = await Event.countDocuments({
-      admins: userId,
+      ...baseQuery,
       date: { $lt: new Date() },
     });
     const upcomingEvents = await Event.countDocuments({
-      admins: userId,
+      ...baseQuery,
       date: { $gte: new Date() },
       isActive: true,
     });
 
-    const events = await Event.find({ admins: userId }).select("attendees");
+    const events = await Event.find(baseQuery).select("attendees");
     const totalAttendees = events.reduce(
       (total, event) => total + event.attendees.length,
       0

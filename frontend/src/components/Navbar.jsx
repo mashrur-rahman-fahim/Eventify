@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { VerifyContext } from "../context/VerifyContext";
+import { useUser } from "../context/UserContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ThemeSwitcher from "./ThemeSwitcher";
 
 export const Navbar = ({ handleLogout }) => {
   const { isAdmin, checkLogin, logout } = useContext(VerifyContext);
+  const { user, clearUser } = useUser();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -67,6 +69,7 @@ export const Navbar = ({ handleLogout }) => {
       setIsLoggingOut(false);
       setShowLogoutModal(false);
       logout();
+      clearUser();
     }
   };
 
@@ -129,8 +132,13 @@ export const Navbar = ({ handleLogout }) => {
           <Link to="/profile" className="btn btn-ghost btn-circle avatar">
             <div className="w-10 rounded-full">
               <img
-                src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                src={
+                  user?.image?.url
+                    ? user.image.url
+                    : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                }
                 alt="profile"
+                className="w-full h-full object-cover"
               />
             </div>
           </Link>

@@ -3,10 +3,11 @@ import api from "../utils/api";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { Navbar } from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, updateUser } = useUser();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
@@ -23,26 +24,13 @@ const Profile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get("/api/getUserProfile", {
-          withCredentials: true,
-        });
-        setUser(res.data.user);
-        setFormData({
-          name: res.data.user?.name || "",
-          email: res.data.user?.email || "",
-        });
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load profile. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
+    if (user) {
+      setFormData({
+        name: user?.name || "",
+        email: user?.email || "",
+      });
+    }
+  }, [user]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -82,7 +70,7 @@ const Profile = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      setUser(res.data.user);
+      updateUser(res.data.user);
       setIsEditing(false);
       setImageFile(null);
       setImagePreview("");
@@ -109,7 +97,7 @@ const Profile = () => {
     }
   };
 
-  if (loading) {
+  if (!user) {
     return (
       <div className="flex justify-center items-center h-64">
         <span className="loading loading-spinner loading-lg text-primary"></span>
