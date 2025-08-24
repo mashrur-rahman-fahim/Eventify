@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  image: {
+    type: String, 
+    default: null,
+  },
   role: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Role",

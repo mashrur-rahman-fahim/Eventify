@@ -84,7 +84,7 @@ export const loginUser = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate("roleId", "name level")
+      .populate("role", "name level")
       .select("-password");
 
     return res.status(200).json({
@@ -150,4 +150,3 @@ export const searchUserByName = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
