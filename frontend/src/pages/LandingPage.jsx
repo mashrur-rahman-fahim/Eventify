@@ -175,8 +175,9 @@ export const LandingPage = () => {
               </li>
             </ul>
           </div>
-          <div className="btn btn-ghost text-2xl font-bold text-primary">
-            Eventify
+          <div className="btn btn-ghost text-2xl font-bold text-primary flex items-center gap-3">
+            <img src="/vite.svg" alt="Eventify Logo" className="w-10 h-10" />
+            <span>Eventify</span>
           </div>
         </div>
         <div className="navbar-center hidden lg:flex">
@@ -806,8 +807,9 @@ export const LandingPage = () => {
           </div>
 
           <div className="border-t border-base-content/20 mt-8 pt-8 text-center text-base-content/60">
-            <p>&copy; 2025 Eventify. Built with passion for academic excellence
-            .</p>
+            <p>
+              &copy; 2025 Eventify. Built with passion for academic excellence .
+            </p>
           </div>
         </div>
       </footer>

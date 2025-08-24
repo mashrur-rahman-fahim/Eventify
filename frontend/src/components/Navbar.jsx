@@ -105,8 +105,12 @@ export const Navbar = ({ handleLogout }) => {
             </ul>
           </div>
           {/* App Name / Logo */}
-          <Link to="/dashboard" className="btn btn-ghost text-xl">
-            Eventify
+          <Link
+            to="/dashboard"
+            className="btn btn-ghost text-xl flex items-center gap-2"
+          >
+            <img src="/vite.svg" alt="Eventify Logo" className="w-8 h-8" />
+            <span className="font-bold">Eventify</span>
           </Link>
         </div>
 
