@@ -562,7 +562,7 @@ export const LandingPage = () => {
           </div>
 
           <div className="border-t border-base-content/20 mt-8 pt-8 text-center text-base-content/60">
-            <p>&copy; 2024 Eventify. Made with ❤️ for university students.</p>
+            <p>&copy; 2025 Eventify. Made with ❤️ for university students.</p>
           </div>
         </div>
       </footer>
