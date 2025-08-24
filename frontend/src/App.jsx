@@ -23,7 +23,7 @@ import { AllEventPage } from "./pages/AllEventPage";
 import { MyEventPage } from "./pages/MyEventPage";
 import { CertificatePage } from "./pages/CertificatePage";
 import EventManagementPage from "./pages/EventManagementPage";
-import Profile from "./components/Profile";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
