@@ -109,7 +109,11 @@ export const Navbar = ({ handleLogout }) => {
             to="/dashboard"
             className="btn btn-ghost text-xl flex items-center gap-2"
           >
-            <img src="/vite.svg" alt="Eventify Logo" className="w-8 h-8" />
+            <img
+              src="https://res.cloudinary.com/dsb7ttev4/image/upload/v1756038824/vite_q17xlv.svg"
+              alt="Eventify Logo"
+              className="w-8 h-8"
+            />
             <span className="font-bold">Eventify</span>
           </Link>
         </div>
