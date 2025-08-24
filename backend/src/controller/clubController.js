@@ -172,38 +172,25 @@ export const requestToJoinClub = async (req, res) => {
   }
 };
 
+// clubController.js
 export const getJoinRequests = async (req, res) => {
   try {
     const { clubId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(clubId)) {
-      return res.status(400).json({ message: "Invalid club ID" });
-    }
-
     const club = await Club.findById(clubId)
-      .populate("joinRequests.userId", "name email")
-      .populate("admins", "name email");
+      .populate("joinRequests.userId", "name email") // get name, email of requester
+      .exec();
 
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
 
-    const isAdmin = club.admins.some(
-      (adminId) => adminId.toString() === req.user._id.toString()
-    );
-
-    if (!isAdmin) {
-      return res.status(403).json({
-        message: "Only club admins can view join requests",
-      });
-    }
-
-    res.status(200).json({ joinRequests: club.joinRequests });
+    res.json({ joinRequests: club.joinRequests });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Failed to fetch join requests" });
   }
 };
+
 
 export const processJoinRequest = async (req, res) => {
   try {
