@@ -166,10 +166,6 @@ dist-ssr
 ecosystem.config.js
 .pm2/
 
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
 
 # Storybook build outputs
 .out
